@@ -1,0 +1,24 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# --- Temporary/Auto-save Files ---
+*.tscn[0-9]*
+*.gd[0-9]*
+*.tmp
+
+# --- Editor & Local Settings ---
+.import/
+export_preset.cfg
+editor_layout.cfg
+
+# --- System/OS Files ---
+.DS_Store
+Thumbs.db
+
+# --- Build Artifacts ---
+build/
+exports/
+*.exe
+*.pck
+*.zip
