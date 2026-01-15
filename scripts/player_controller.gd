@@ -1,14 +1,15 @@
 extends CharacterBody2D
 #TODO:
-# update the resize_colider function
+# make State a componet called EntityState
 # refactor accel
-# add a state machine
 # add walljumps
 # add horizontal wallrun & wallkicks
 # add wall clime and stamina
 # add ledge grab
 
-enum PlayerState { ON_GROUND, IN_AIR, ON_WALL }  #TODO
+enum State { GROUNDED, AIRBORNE, BUSY, LOCKED }
+
+enum SubState { GROUND_MOVEMENT, SLIDING, WALL_BOUNCE, AIR_MOVEMENT }
 
 const JUMP_HEIGHT: float = -430.0
 ## how fast does the jump stop after it cut, makes the transition really smooth
@@ -48,7 +49,8 @@ var previous_velocity: Vector2
 var slide_index: int = 0
 var horizontal_input_axis: float = 0.0
 var movement_lerp_factor: float = 0.0
-var current_state: PlayerState = PlayerState.IN_AIR
+var current_state = State.GROUNDED
+var current_sub_state = SubState.GROUND_MOVEMENT
 
 # timers
 @onready var coyote_timer: Timer = $CoyoteTimer
@@ -71,47 +73,32 @@ var current_state: PlayerState = PlayerState.IN_AIR
 #coliders
 @onready var collision_box: CollisionShape2D = $CollisionBox
 
+
 func _physics_process(delta: float) -> void:
 	previous_velocity = velocity
-
-	# horizontal movment
 	horizontal_input_axis = Input.get_axis("left", "right")
 	if Input.is_action_pressed("crouch") and is_on_floor():
 		_start_slide()
 
 	if is_on_floor():
-		if !is_sliding and slide_boost_cooldown_timer.is_stopped():
-			slide_boosts = 3
+		_change_state(State.GROUNDED)
+	else:
+		_change_state(State.AIRBORNE)
 
-		if Input.is_action_just_pressed("crouch"):
-			_start_slide()
+	match current_state:
+		State.GROUNDED:
+			_process_grounded()
+		State.AIRBORNE:
+			_process_airborne(delta)
 
-		if is_sliding:
-			_handle_slide(delta)
-		else:
-			# Normal ground movement
+	match current_sub_state:
+		SubState.GROUND_MOVEMENT:
 			_apply_ground_movement()
 			slide_boost_cooldown_timer.start()
-	else:
-		_end_slide()
-		_handle_air_momentum()
-
-	# vertical movment
-	if is_on_floor():
-		target_gravity = MIN_GRAVITY
-		is_coyote_time_activated = false
-		is_lurch_time_activated = false
-		gravity = lerp(gravity, MIN_GRAVITY, MIN_GRAVITY * delta)
-	else:
-		target_gravity = MAX_GRAVITY
-		if coyote_timer.is_stopped() and !is_coyote_time_activated:
-			coyote_timer.start()
-			is_coyote_time_activated = true
-		if lurchless_timer.is_stopped() and !is_lurch_time_activated:
-			lurchless_timer.start()
-			is_lurch_time_activated = true
-		_handle_jump_cut()
-		_calculate_gravity(delta)
+		SubState.SLIDING:
+			_handle_slide(delta)
+		SubState.AIR_MOVEMENT:
+			_handle_air_momentum()
 
 	_update_jump_buffer()
 	_attempt_jump()
@@ -124,7 +111,8 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	_wall_bounce_stagger()
+	if abs(previous_velocity.x) > WALL_BOUNCE_THRESHOLD and is_on_wall():
+		_change_sub_state(SubState.WALL_BOUNCE)
 
 
 func _handle_air_momentum() -> void:
@@ -275,3 +263,61 @@ func _resize_collider(offset: float = 0.0, size: float = 1.0) -> void:
 		right_head_nudge_outer.position.y += offset
 		right_head_nudge_inner.position.y += offset
 		collision_box.position.y += offset
+
+
+#region HFSM FUNCTIONS
+
+
+func _change_state(new_state: State):
+	if current_state == new_state:
+		return
+	print("Changing state from ", State.keys()[current_state], " to ", State.keys()[new_state])
+	current_state = new_state
+
+
+func _change_sub_state(new_sub_state: SubState) -> void:
+	if current_sub_state == new_sub_state:
+		return
+	print(
+		"Changing state from ",
+		SubState.keys()[current_sub_state],
+		" to ",
+		SubState.keys()[new_sub_state]
+	)
+	current_sub_state = new_sub_state
+
+
+func _process_grounded() -> void:
+	target_gravity = MIN_GRAVITY
+	is_coyote_time_activated = false
+	is_lurch_time_activated = false
+	gravity = MIN_GRAVITY
+
+	if !is_sliding and slide_boost_cooldown_timer.is_stopped():
+		slide_boosts = 3
+
+	if Input.is_action_just_pressed("crouch"):
+		_start_slide()
+
+	if is_sliding:
+		_change_sub_state(SubState.SLIDING)
+	else:
+		_change_sub_state(SubState.GROUND_MOVEMENT)
+
+
+func _process_airborne(delta: float):
+	_end_slide()
+	_change_sub_state(SubState.AIR_MOVEMENT)
+	_handle_jump_cut()
+	_calculate_gravity(delta)
+	target_gravity = MAX_GRAVITY
+
+	if coyote_timer.is_stopped() and !is_coyote_time_activated:
+		coyote_timer.start()
+		is_coyote_time_activated = true
+
+	if lurchless_timer.is_stopped() and !is_lurch_time_activated:
+		lurchless_timer.start()
+		is_lurch_time_activated = true
+
+#endregion
