@@ -1,7 +1,8 @@
-[gd_scene load_steps=16 format=3 uid="uid://byrbn71qtldi2"]
+[gd_scene load_steps=17 format=3 uid="uid://byrbn71qtldi2"]
 
 [ext_resource type="Script" uid="uid://bhjm082qxdpd1" path="res://scripts/player_controller.gd" id="1_jumf5"]
 [ext_resource type="Texture2D" uid="uid://ba5p2a1qkroeo" path="res://assets/temp/player-temp.png" id="2_16d5g"]
+[ext_resource type="PackedScene" uid="uid://digpux32xmif6" path="res://assets/components/entity_state.res" id="3_insbl"]
 
 [sub_resource type="Animation" id="Animation_rug40"]
 length = 0.001
@@ -193,9 +194,11 @@ height = 32.0
 radius = 17.0
 
 [node name="Player" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 2
 script = ExtResource("1_jumf5")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+[node name="Animator" type="AnimationPlayer" parent="."]
 libraries = {
 &"": SubResource("AnimationLibrary_ah73p")
 }
@@ -208,6 +211,7 @@ vframes = 9
 frame = 60
 
 [node name="CollisionBox" type="CollisionShape2D" parent="."]
+physics_interpolation_mode = 2
 shape = SubResource("CapsuleShape2D_3mip4")
 
 [node name="HurtBox" type="CollisionShape2D" parent="."]
@@ -231,56 +235,51 @@ position = Vector2(31, -2)
 
 [node name="LeftHeadNudgeOuter" type="RayCast2D" parent="RayCast/HeadNudge"]
 position = Vector2(-41, -11)
-target_position = Vector2(0, -2)
+target_position = Vector2(0, -4)
 hit_from_inside = true
 
 [node name="LeftHeadNudgeInner" type="RayCast2D" parent="RayCast/HeadNudge"]
-position = Vector2(-39, -11)
-target_position = Vector2(0, -2)
+position = Vector2(-38, -11)
+target_position = Vector2(0, -4)
 hit_from_inside = true
 
 [node name="RightHeadNudgeInner" type="RayCast2D" parent="RayCast/HeadNudge"]
-position = Vector2(-23, -11)
-target_position = Vector2(0, -2)
+position = Vector2(-24, -11)
+target_position = Vector2(0, -4)
 hit_from_inside = true
 
 [node name="RightHeadNudgeOuter" type="RayCast2D" parent="RayCast/HeadNudge"]
 position = Vector2(-21, -11)
-target_position = Vector2(0, -2)
+target_position = Vector2(0, -4)
 hit_from_inside = true
 
 [node name="LedgeHop" type="Node2D" parent="RayCast"]
 
 [node name="LeftLedgeHopUpper" type="RayCast2D" parent="RayCast/LedgeHop"]
 position = Vector2(-41, 12)
-target_position = Vector2(-2, 0)
+target_position = Vector2(-4, 0)
 hit_from_inside = true
 
 [node name="LeftLedgeHopLower" type="RayCast2D" parent="RayCast/LedgeHop"]
 position = Vector2(-41, 17)
-target_position = Vector2(-2, 0)
+target_position = Vector2(-4, 0)
 hit_from_inside = true
 
 [node name="RightLedgeHopUpper" type="RayCast2D" parent="RayCast/LedgeHop"]
 position = Vector2(-21, 12)
-target_position = Vector2(2, 0)
+target_position = Vector2(4, 0)
 hit_from_inside = true
 
 [node name="RightLedgeHopLower" type="RayCast2D" parent="RayCast/LedgeHop"]
 position = Vector2(-21, 17)
-target_position = Vector2(2, 0)
+target_position = Vector2(4, 0)
 hit_from_inside = true
 
 [node name="Generic" type="Node2D" parent="RayCast"]
 
-[node name="LeftGenericRay" type="RayCast2D" parent="RayCast/Generic"]
-position = Vector2(-41, 2)
-target_position = Vector2(-2, 0)
-hit_from_inside = true
-
 [node name="RightGenericRay" type="RayCast2D" parent="RayCast/Generic"]
 position = Vector2(-21, 2)
-target_position = Vector2(2, 0)
+target_position = Vector2(4, 0)
 hit_from_inside = true
 
 [node name="CoyoteTimer" type="Timer" parent="."]
@@ -297,3 +296,5 @@ one_shot = true
 [node name="LurchlessTimer" type="Timer" parent="."]
 wait_time = 0.1
 one_shot = true
+
+[node name="EntityState" parent="." instance=ExtResource("3_insbl")]

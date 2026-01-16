@@ -1,64 +1,93 @@
+class_name Player
 extends CharacterBody2D
 #TODO:
-# make State a componet called EntityState
-# refactor accel
 # add walljumps
 # add horizontal wallrun & wallkicks
 # add wall clime and stamina
 # add ledge grab
 
-enum State { GROUNDED, AIRBORNE, BUSY, LOCKED }
+enum PlayerState { IDLE, RUN, SLIDE, CROUCH, WALL_BOUNCE, AIR_MOVEMENT }
 
-enum SubState { GROUND_MOVEMENT, SLIDING, WALL_BOUNCE, AIR_MOVEMENT }
-
-const JUMP_HEIGHT: float = -430.0
+#region CONSTANTS
+# JUMP
+const JUMP_HEIGHT: float = -600.0
 ## how fast does the jump stop after it cut, makes the transition really smooth
 const JUMP_CUT_POWER: float = 0.5
 ## only assist movement when moving upward significant
 const JUMP_ASSIST_THRESHOLD: float = JUMP_HEIGHT / 2.0
-const JUMP_SLIDE_MULTIPLIER: float = 0.75
-const HEAD_NUDGE_POWER: float = 1.75
-const LEDGE_BOOST_POWER: float = 125
+const JUMP_SLIDE_MULTIPLIER: float = 0.50
+
+# AIR MOVEMENT
+const HEAD_NUDGE_POWER: float = 20.00
+const LEDGE_BOOST_POWER: float = 200.0
 const MIN_LEDGE_BOOST_VELOCITY = -30.0
 const MAX_LEDGE_BOOST_VELOCITY = -5.0
-const MIN_GRAVITY: float = 12.0
-const MAX_GRAVITY: float = 14.5
-## higher = faster transition to MAX_GRAVITY
-const GRAVITY_SMOOTHING: float = 5.0
-const MAX_RUN_SPEED: float = 350.0
 const MAX_LURCH_SPEED: float = 300.0
-const GROUND_ACCELERATION: float = 30.0
 const LURCH_STEP: float = 50.0
+
+# GROUND MOVEMENT
+const MAX_RUN_SPEED: float = 450.0
+const MAX_CROUCH_SPEED: float = 200.0
+const GROUND_ACCELERATION: float = 30.0
 const FRICTION: float = 20.0
 const SLIDE_FRICTION: float = 1.0
-const SLIDE_BOOST_POWER: Array = [1.75, 1.2, 1.2]
+## multiplies the players x velocity by 1.75, 1.2, and 1.2 every successive slide
+const SLIDE_BOOST_POWER: Array = [1.5, 1.2, 1.2]
 ## shrink the collision height
 const SLIDE_Y_SCALE: float = 0.5
 const SLIDE_Y_OFFSET: float = 8.0
+
+# WALL INTERACTIONS
 const WALL_BOUNCE_POWER: float = 0.5
 const WALL_BOUNCE_THRESHOLD: float = 400
+const WALL_JUMP_PUSH_FORCE:float = 200.0
 
+
+# PHYSICS
+const WALL_GRAVITY: float  = 8.5
+const MIN_GRAVITY: float = 14.0
+const MAX_GRAVITY: float = 18.0
+## higher = faster transition to MAX_GRAVITY
+const GRAVITY_SMOOTHING: float = 5.0
+#endregion
+
+#region VARIABLES
+# MOVEMENT
+var wall_contact_coyote: float = 0.0
+var slide_boosts: int = 3
+var is_sliding: bool = false
+var slide_index: int = 0
+var is_crouching: bool = false
+
+# INPUT
+var horizontal_input_axis: float = 0.0
 var is_coyote_time_activated: bool = false
+var is_lurch_possible: bool = false
+
+# PHYSICS
 var gravity: float = MIN_GRAVITY
 ## gravitational acceleration that gravity lerp to
 var target_gravity: float = MIN_GRAVITY
-var slide_boosts: int = 3
-var is_sliding: bool = false
-var is_lurch_time_activated: bool = false
 var previous_velocity: Vector2
-var slide_index: int = 0
-var horizontal_input_axis: float = 0.0
-var movement_lerp_factor: float = 0.0
-var current_state = State.GROUNDED
-var current_sub_state = SubState.GROUND_MOVEMENT
 
-# timers
+
+# VISUALS
+var facing: int = 1
+
+# STATE
+var current_player_state = PlayerState.RUN
+
+# VISUALS
+@onready var player_sprite: Sprite2D = $PlayerSprite
+@onready var animator: AnimationPlayer = $Animator
+
+# TIMERS
 @onready var coyote_timer: Timer = $CoyoteTimer
 @onready var jump_buffer_timer: Timer = $JumpBufferTimer
 @onready var lurchless_timer: Timer = $LurchlessTimer
 @onready var slide_boost_cooldown_timer: Timer = $SlideBoostCooldownTimer
 
-# raycasts
+# RAYCASTS
 @onready var left_head_nudge_outer: RayCast2D = $RayCast/HeadNudge/LeftHeadNudgeOuter
 @onready var left_head_nudge_inner: RayCast2D = $RayCast/HeadNudge/LeftHeadNudgeInner
 @onready var right_head_nudge_inner: RayCast2D = $RayCast/HeadNudge/RightHeadNudgeInner
@@ -67,38 +96,53 @@ var current_sub_state = SubState.GROUND_MOVEMENT
 @onready var left_ledge_hop_lower: RayCast2D = $RayCast/LedgeHop/LeftLedgeHopLower
 @onready var right_ledge_hop_upper: RayCast2D = $RayCast/LedgeHop/RightLedgeHopUpper
 @onready var right_ledge_hop_lower: RayCast2D = $RayCast/LedgeHop/RightLedgeHopLower
-@onready var left_generic_ray: RayCast2D = $RayCast/Generic/LeftGenericRay
 @onready var right_generic_ray: RayCast2D = $RayCast/Generic/RightGenericRay
 
-#coliders
+#COLLIDERS
 @onready var collision_box: CollisionShape2D = $CollisionBox
+
+#COMPONENTS
+@onready var entity_state: EntityState = $EntityState
+#endregion
 
 
 func _physics_process(delta: float) -> void:
 	previous_velocity = velocity
 	horizontal_input_axis = Input.get_axis("left", "right")
-	if Input.is_action_pressed("crouch") and is_on_floor():
-		_start_slide()
+	#if Input.is_action_pressed("crouch") and is_on_floor():
+		#_start_slide()
 
-	if is_on_floor():
-		_change_state(State.GROUNDED)
-	else:
-		_change_state(State.AIRBORNE)
+	#print(is_lurch_possible)
+	entity_state.update_physics_state(is_on_floor())
 
-	match current_state:
-		State.GROUNDED:
+	match entity_state.current_state:
+		EntityState.State.GROUNDED:
 			_process_grounded()
-		State.AIRBORNE:
+		EntityState.State.AIRBORNE:
 			_process_airborne(delta)
+		EntityState.State.BUSY:
+			print("nothing here yet")
+		EntityState.State.LOCKED:
+			print("nothing here yet")
 
-	match current_sub_state:
-		SubState.GROUND_MOVEMENT:
-			_apply_ground_movement()
+	match current_player_state:
+		PlayerState.IDLE:
+			animator.play("player_idle")
+			_handle_idle()
+		PlayerState.RUN:
+			animator.play("player_run")
+			_handle_run()
 			slide_boost_cooldown_timer.start()
-		SubState.SLIDING:
+		PlayerState.CROUCH:
+			animator.play("player_fall_idle_low")
+			_handle_crouch()
+		PlayerState.SLIDE:
+			animator.play("player_t_pose")
 			_handle_slide(delta)
-		SubState.AIR_MOVEMENT:
+		PlayerState.AIR_MOVEMENT:
+			animator.play("player_fall_idle_low")
 			_handle_air_momentum()
+
 
 	_update_jump_buffer()
 	_attempt_jump()
@@ -111,47 +155,101 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	if abs(previous_velocity.x) > WALL_BOUNCE_THRESHOLD and is_on_wall():
-		_change_sub_state(SubState.WALL_BOUNCE)
+	_update_facing_direction()
+
+	_flip_sprite()
+
+	if _should_wall_bounce():
+		_change_state(PlayerState.WALL_BOUNCE)
 
 
+## Add fine air control at a cost of speed, if no arrow keys are pressed there is no loss of speed
+## This allow to have advance movement tech like 'pseudo-slide-hops and pseudo-bunny-hops'
 func _handle_air_momentum() -> void:
-	if horizontal_input_axis != 0 and is_lurch_time_activated:
+	if _can_apply_air_lurch():
 		var target_speed = horizontal_input_axis * MAX_LURCH_SPEED
 		if abs(velocity.x) > abs(target_speed):
 			velocity.x = move_toward(velocity.x, target_speed, LURCH_STEP)
 		else:
 			velocity.x = move_toward(velocity.x, target_speed, LURCH_STEP)
-	else:
-		velocity.x = velocity.x
 
 
-func _apply_ground_movement() -> void:
+func _handle_run() -> void:
 	var target_speed = horizontal_input_axis * MAX_RUN_SPEED
-	var accelation = GROUND_ACCELERATION
-	var decelation = FRICTION
+	velocity.x = move_toward(velocity.x, target_speed, GROUND_ACCELERATION)
 
-	var rate = accelation if horizontal_input_axis != 0 else decelation
-	velocity.x = move_toward(velocity.x, target_speed, rate)
+
+func _start_crouch() -> void:
+	if is_crouching:
+		return
+
+	is_crouching = true
+
+	_resize_collider(SLIDE_Y_OFFSET, SLIDE_Y_SCALE)
+
+
+func _handle_crouch() -> void:
+	var target_speed = horizontal_input_axis * MAX_CROUCH_SPEED
+	velocity.x = move_toward(velocity.x, target_speed, GROUND_ACCELERATION)
+
+	if !Input.is_action_pressed("crouch"):
+		_end_crouch()
+
+func _end_crouch() -> void:
+	if !is_crouching:
+		return
+	is_crouching = false
+
+	_resize_collider(SLIDE_Y_OFFSET)
+
+func _handle_idle() -> void:
+	velocity.x = move_toward(velocity.x, 0.0, FRICTION)
 
 
 ## Bounces the player on the x if they hit a wall with speed, staggering them.
-## Makes losing velocity more fun to look at at least.
+## Makes losing velocity more fun to look at, and add complex movement tech to change directions.
 func _wall_bounce_stagger() -> void:
 	#TODO
 	# a 0.5 second animation will play for the recovery
 	# a sound will play in the left or right ear depending on the side you hit the
-	if abs(previous_velocity.x) > WALL_BOUNCE_THRESHOLD and is_on_wall():
-		print("applied")
+	if _should_wall_bounce():
 		velocity.x = -previous_velocity.x * WALL_BOUNCE_POWER
 
 
 func _start_slide() -> void:
 	if is_sliding:
+		_handle_slide_boost()
 		return
 
 	is_sliding = true
 
+	_handle_slide_boost()
+
+	_resize_collider(SLIDE_Y_OFFSET, SLIDE_Y_SCALE)
+
+
+func _handle_slide(delta: float) -> void:
+	if is_on_floor():
+		velocity.x = lerp(velocity.x, 0.0, SLIDE_FRICTION * delta)
+	else:
+		velocity.x = velocity.x
+
+	if !Input.is_action_pressed("crouch"):
+		_end_slide()
+
+	if _should_slide_to_crouch():
+		_start_crouch()
+
+
+func _end_slide() -> void:
+	if !is_sliding:
+		return
+	is_sliding = false
+
+	_resize_collider(SLIDE_Y_OFFSET)
+
+
+func _handle_slide_boost() -> void:
 	if slide_boosts > 0:
 		slide_index = slide_index % SLIDE_BOOST_POWER.size()
 
@@ -162,23 +260,6 @@ func _start_slide() -> void:
 		slide_index += 1
 	else:
 		slide_index = 0
-
-	_resize_collider(SLIDE_Y_OFFSET, SLIDE_Y_SCALE)
-
-
-func _handle_slide(delta: float) -> void:
-	velocity.x = lerp(velocity.x, 0.0, SLIDE_FRICTION * delta)
-
-	if !Input.is_action_pressed("crouch"):
-		_end_slide()
-
-
-func _end_slide() -> void:
-	if !is_sliding:
-		return
-	is_sliding = false
-
-	_resize_collider(SLIDE_Y_OFFSET)
 
 
 ## Increase the gravitational acceleration over time to make the fall less floaty.
@@ -193,11 +274,10 @@ func _update_jump_buffer() -> void:
 
 
 func _attempt_jump() -> void:
-	if !jump_buffer_timer.is_stopped() and (!coyote_timer.is_stopped() or is_on_floor()):
+	if _can_jump():
 		velocity.y = JUMP_HEIGHT
 		if is_sliding:
 			velocity.y *= JUMP_SLIDE_MULTIPLIER
-			_end_slide()
 		jump_buffer_timer.stop()
 		coyote_timer.stop()
 		is_coyote_time_activated = true
@@ -211,42 +291,27 @@ func _handle_jump_cut() -> void:
 
 ## Gives a nudge when one of the top corner hit a celling so the jump doesn't feel sticky.
 func _handle_head_nudge() -> void:
-	if left_head_nudge_outer.is_colliding() and !left_head_nudge_inner.is_colliding():
+	if _should_nudge_left():
 		velocity.x += HEAD_NUDGE_POWER
-	elif right_head_nudge_outer.is_colliding() and !right_head_nudge_inner.is_colliding():
+	if _should_nudge_right():
 		velocity.x -= HEAD_NUDGE_POWER
 
 
 ## Gives a boost when the jump barely not high enough to clear a ledge so the jump is less annoying.
 func _handle_ledge_boost() -> void:
-	var is_in_boost_window: bool = (
-		velocity.y > MIN_LEDGE_BOOST_VELOCITY and velocity.y < MAX_LEDGE_BOOST_VELOCITY
-	)
-	var moving_fast_enough: bool = abs(velocity.x) > 3.0
-
-	if !(is_in_boost_window and moving_fast_enough):
+	if !_can_apply_ledge_boost():
 		return
 
-	# check left
-	if (
-		left_ledge_hop_lower.is_colliding()
-		and !left_ledge_hop_upper.is_colliding()
-		and velocity.x < 0
-	):
-		velocity.y += LEDGE_BOOST_POWER
-	# check right
-	if (
-		right_ledge_hop_lower.is_colliding()
-		and !right_ledge_hop_upper.is_colliding()
-		and velocity.x > 0
-	):
-		velocity.y += LEDGE_BOOST_POWER
+	if _should_boost_left_ledge():
+		velocity.y -= LEDGE_BOOST_POWER
+	if _should_boost_right_ledge():
+		velocity.y -= LEDGE_BOOST_POWER
 
 
 func _resize_collider(offset: float = 0.0, size: float = 1.0) -> void:
 	var is_reset_mode = false
 	if size == 1.0:
-		is_reset_mode = true  #TODO
+		is_reset_mode = true
 
 	if is_reset_mode:
 		collision_box.scale.y = 1.0
@@ -265,49 +330,58 @@ func _resize_collider(offset: float = 0.0, size: float = 1.0) -> void:
 		collision_box.position.y += offset
 
 
+func _update_facing_direction() -> void:
+	if horizontal_input_axis < 0.0:
+		facing = 1
+	if horizontal_input_axis > 0.0:
+		facing = -1
+
+func _flip_sprite() -> void:
+	if facing == 1:
+		player_sprite.flip_h = true
+	else:
+		player_sprite.flip_h = false
+
 #region HFSM FUNCTIONS
 
 
-func _change_state(new_state: State):
-	if current_state == new_state:
-		return
-	print("Changing state from ", State.keys()[current_state], " to ", State.keys()[new_state])
-	current_state = new_state
-
-
-func _change_sub_state(new_sub_state: SubState) -> void:
-	if current_sub_state == new_sub_state:
+func _change_state(new_state: PlayerState) -> void:
+	if current_player_state == new_state:
 		return
 	print(
 		"Changing state from ",
-		SubState.keys()[current_sub_state],
+		PlayerState.keys()[current_player_state],
 		" to ",
-		SubState.keys()[new_sub_state]
+		PlayerState.keys()[new_state]
 	)
-	current_sub_state = new_sub_state
+	current_player_state = new_state
 
 
 func _process_grounded() -> void:
+	if Input.is_action_pressed("crouch"):
+		_start_slide()
 	target_gravity = MIN_GRAVITY
 	is_coyote_time_activated = false
-	is_lurch_time_activated = false
+	is_lurch_possible = false
 	gravity = MIN_GRAVITY
 
 	if !is_sliding and slide_boost_cooldown_timer.is_stopped():
 		slide_boosts = 3
 
 	if Input.is_action_just_pressed("crouch"):
-		_start_slide()
+		_change_state(PlayerState.CROUCH)
 
-	if is_sliding:
-		_change_sub_state(SubState.SLIDING)
+	if is_crouching:
+		_change_state(PlayerState.CROUCH)
+	elif is_sliding:
+		_change_state(PlayerState.SLIDE)
+	elif horizontal_input_axis != 0.0:
+		_change_state(PlayerState.RUN)
 	else:
-		_change_sub_state(SubState.GROUND_MOVEMENT)
-
+		_change_state(PlayerState.IDLE)
 
 func _process_airborne(delta: float):
-	_end_slide()
-	_change_sub_state(SubState.AIR_MOVEMENT)
+	_change_state(PlayerState.AIR_MOVEMENT)
 	_handle_jump_cut()
 	_calculate_gravity(delta)
 	target_gravity = MAX_GRAVITY
@@ -316,8 +390,73 @@ func _process_airborne(delta: float):
 		coyote_timer.start()
 		is_coyote_time_activated = true
 
-	if lurchless_timer.is_stopped() and !is_lurch_time_activated:
+	if _should_start_lurch_time():
 		lurchless_timer.start()
-		is_lurch_time_activated = true
+		is_lurch_possible = true
+
+
+#endregion
+
+#region CONDITIONS
+
+
+func _can_apply_ledge_boost() -> bool:
+	var is_in_velocity_window = (
+		velocity.y > MIN_LEDGE_BOOST_VELOCITY and velocity.y < MAX_LEDGE_BOOST_VELOCITY
+	)
+	var has_horizontal_momentum = abs(velocity.x) > 3.0
+	return is_in_velocity_window and has_horizontal_momentum
+
+
+func _should_boost_left_ledge() -> bool:
+	return (
+		left_ledge_hop_lower.is_colliding()
+		and !left_ledge_hop_upper.is_colliding()
+		and velocity.x < 0
+	)
+
+
+func _should_boost_right_ledge() -> bool:
+	return (
+		right_ledge_hop_lower.is_colliding()
+		and !right_ledge_hop_upper.is_colliding()
+		and velocity.x > 0
+	)
+
+
+func _should_nudge_left() -> bool:
+	return left_head_nudge_outer.is_colliding() and !left_head_nudge_inner.is_colliding()
+
+
+func _should_nudge_right() -> bool:
+	return right_head_nudge_outer.is_colliding() and !right_head_nudge_inner.is_colliding()
+
+
+func _can_jump() -> bool:
+	var has_jump_buffered = !jump_buffer_timer.is_stopped()
+	var is_grounded_or_in_coyote_time = !coyote_timer.is_stopped() or is_on_floor()
+	return has_jump_buffered and is_grounded_or_in_coyote_time
+
+
+func _should_wall_bounce() -> bool:
+	var moving_fast_enough = abs(previous_velocity.x) > WALL_BOUNCE_THRESHOLD
+	return moving_fast_enough and is_on_wall()
+
+
+func _can_apply_air_lurch() -> bool:
+	var has_horizontal_input = horizontal_input_axis != 0
+	return has_horizontal_input and is_lurch_possible
+
+
+func _should_start_lurch_time() -> bool:
+	return lurchless_timer.is_stopped() and !is_lurch_possible
+
+
+func _should_slide_to_crouch() -> bool:
+	var is_inputting_horizontal: bool = (
+		abs(velocity.x) <= MAX_CROUCH_SPEED
+		and horizontal_input_axis != 0.0
+		)
+	return is_inputting_horizontal or abs(velocity.x) == 0.0
 
 #endregion
