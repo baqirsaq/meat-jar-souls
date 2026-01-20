@@ -277,9 +277,14 @@ hit_from_inside = true
 
 [node name="Generic" type="Node2D" parent="RayCast"]
 
+[node name="LeftGenericRay" type="RayCast2D" parent="RayCast/Generic"]
+position = Vector2(-41, 2)
+target_position = Vector2(-6, 0)
+hit_from_inside = true
+
 [node name="RightGenericRay" type="RayCast2D" parent="RayCast/Generic"]
 position = Vector2(-21, 2)
-target_position = Vector2(4, 0)
+target_position = Vector2(6, 0)
 hit_from_inside = true
 
 [node name="CoyoteTimer" type="Timer" parent="."]

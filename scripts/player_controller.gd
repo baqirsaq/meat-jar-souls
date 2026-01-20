@@ -6,11 +6,11 @@ extends CharacterBody2D
 # add wall clime and stamina
 # add ledge grab
 
-enum PlayerState { IDLE, RUN, SLIDE, CROUCH, WALL_BOUNCE, AIR_MOVEMENT }
+enum PlayerState { IDLE, RUN, SLIDE, CROUCH, WALL_BOUNCE, WALL_SLIDE, AIR_MOVEMENT }
 
 #region CONSTANTS
 # JUMP
-const JUMP_HEIGHT: float = -600.0
+const JUMP_HEIGHT: float = -650.0
 ## how fast does the jump stop after it cut, makes the transition really smooth
 const JUMP_CUT_POWER: float = 0.5
 ## only assist movement when moving upward significant
@@ -26,7 +26,7 @@ const MAX_LURCH_SPEED: float = 300.0
 const LURCH_STEP: float = 50.0
 
 # GROUND MOVEMENT
-const MAX_RUN_SPEED: float = 450.0
+const MAX_RUN_SPEED: float = 600.0
 const MAX_CROUCH_SPEED: float = 200.0
 const GROUND_ACCELERATION: float = 30.0
 const FRICTION: float = 20.0
@@ -40,11 +40,10 @@ const SLIDE_Y_OFFSET: float = 8.0
 # WALL INTERACTIONS
 const WALL_BOUNCE_POWER: float = 0.5
 const WALL_BOUNCE_THRESHOLD: float = 400
-const WALL_JUMP_PUSH_FORCE:float = 200.0
-
+const WALL_JUMP_PUSH_FORCE:float = 500.0
 
 # PHYSICS
-const WALL_GRAVITY: float  = 8.5
+const WALL_GRAVITY: float  = 1.5
 const MIN_GRAVITY: float = 14.0
 const MAX_GRAVITY: float = 18.0
 ## higher = faster transition to MAX_GRAVITY
@@ -60,11 +59,13 @@ var slide_index: int = 0
 var is_crouching: bool = false
 
 # INPUT
-var horizontal_input_axis: float = 0.0
+var vertical_input_axis: float = 0.0 # -1.0 if down 1.0 if up
+var horizontal_input_axis: float = 0.0 # -1.0 if left 1.0 if right
 var is_coyote_time_activated: bool = false
 var is_lurch_possible: bool = false
 
 # PHYSICS
+var wall_direction: float = 0.0 # -1.0 if left 1.0 if right
 var gravity: float = MIN_GRAVITY
 ## gravitational acceleration that gravity lerp to
 var target_gravity: float = MIN_GRAVITY
@@ -96,6 +97,7 @@ var current_player_state = PlayerState.RUN
 @onready var left_ledge_hop_lower: RayCast2D = $RayCast/LedgeHop/LeftLedgeHopLower
 @onready var right_ledge_hop_upper: RayCast2D = $RayCast/LedgeHop/RightLedgeHopUpper
 @onready var right_ledge_hop_lower: RayCast2D = $RayCast/LedgeHop/RightLedgeHopLower
+@onready var left_generic_ray: RayCast2D = $RayCast/Generic/LeftGenericRay
 @onready var right_generic_ray: RayCast2D = $RayCast/Generic/RightGenericRay
 
 #COLLIDERS
@@ -107,7 +109,9 @@ var current_player_state = PlayerState.RUN
 
 
 func _physics_process(delta: float) -> void:
+	_get_wall_direction()
 	previous_velocity = velocity
+	vertical_input_axis = Input.get_axis("down", "up")
 	horizontal_input_axis = Input.get_axis("left", "right")
 	#if Input.is_action_pressed("crouch") and is_on_floor():
 		#_start_slide()
@@ -142,6 +146,8 @@ func _physics_process(delta: float) -> void:
 		PlayerState.AIR_MOVEMENT:
 			animator.play("player_fall_idle_low")
 			_handle_air_momentum()
+		PlayerState.WALL_SLIDE:
+			_handle_wall_slide_and_jump()
 
 
 	_update_jump_buffer()
@@ -172,6 +178,22 @@ func _handle_air_momentum() -> void:
 			velocity.x = move_toward(velocity.x, target_speed, LURCH_STEP)
 		else:
 			velocity.x = move_toward(velocity.x, target_speed, LURCH_STEP)
+
+
+func _handle_wall_slide_and_jump() -> void:
+	gravity = WALL_GRAVITY
+	if Input.is_action_just_pressed("jump"):
+		if !is_on_wall():
+			velocity.x *= -1.0
+			velocity.y += get_wall_jump_vector(WALL_JUMP_PUSH_FORCE).y
+		velocity += get_wall_jump_vector(WALL_JUMP_PUSH_FORCE)
+
+
+func _get_wall_direction() -> void:
+	if left_generic_ray.is_colliding():
+		wall_direction = -1.0
+	if right_generic_ray.is_colliding():
+		wall_direction = 1.0
 
 
 func _handle_run() -> void:
@@ -308,6 +330,19 @@ func _handle_ledge_boost() -> void:
 		velocity.y -= LEDGE_BOOST_POWER
 
 
+func get_wall_jump_vector( jump_power: float ) -> Vector2:
+	# Map input (-1 -> 1) to angle (0° -> 90°)
+	var angle_deg = lerp(0.0, 75.0, (vertical_input_axis + 1.0) * 0.5)
+	var angle_rad = deg_to_rad(angle_deg)
+
+	var dir := Vector2(
+		cos(angle_rad) * -wall_direction,
+		-sin(angle_rad)
+	)
+
+	return dir * jump_power
+
+
 func _resize_collider(offset: float = 0.0, size: float = 1.0) -> void:
 	var is_reset_mode = false
 	if size == 1.0:
@@ -383,8 +418,13 @@ func _process_grounded() -> void:
 func _process_airborne(delta: float):
 	_change_state(PlayerState.AIR_MOVEMENT)
 	_handle_jump_cut()
-	_calculate_gravity(delta)
-	target_gravity = MAX_GRAVITY
+	if !_should_wall_slide():
+		_calculate_gravity(delta)
+		target_gravity = MAX_GRAVITY
+
+	if _should_wall_slide():
+		print("Wall Jump!")
+		_change_state(PlayerState.WALL_SLIDE)
 
 	if coyote_timer.is_stopped() and !is_coyote_time_activated:
 		coyote_timer.start()
@@ -399,12 +439,23 @@ func _process_airborne(delta: float):
 
 #region CONDITIONS
 
+func _should_wall_slide() -> bool:
+	var is_colliding_with_wall := (
+		left_generic_ray.is_colliding()
+		or right_generic_ray.is_colliding()
+	)
+
+	var pushing_away: bool = horizontal_input_axis != 0.0 \
+		and sign(horizontal_input_axis) != wall_direction
+
+	return is_colliding_with_wall and velocity.y > 0.0 and not pushing_away
+
 
 func _can_apply_ledge_boost() -> bool:
-	var is_in_velocity_window = (
+	var is_in_velocity_window: bool  = (
 		velocity.y > MIN_LEDGE_BOOST_VELOCITY and velocity.y < MAX_LEDGE_BOOST_VELOCITY
 	)
-	var has_horizontal_momentum = abs(velocity.x) > 3.0
+	var has_horizontal_momentum: float = abs(velocity.x) > 3.0
 	return is_in_velocity_window and has_horizontal_momentum
 
 
