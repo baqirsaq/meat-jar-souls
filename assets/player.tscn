@@ -204,6 +204,7 @@ libraries = {
 }
 
 [node name="PlayerSprite" type="Sprite2D" parent="."]
+z_index = 1
 texture_filter = 1
 texture = ExtResource("2_16d5g")
 hframes = 10

@@ -1,8 +1,7 @@
 class_name Player
 extends CharacterBody2D
 #TODO:
-# add walljumps
-# add horizontal wallrun & wallkicks
+# add horizontal wallrun & wallkicks (titanfall style)
 # add wall clime and stamina
 # add ledge grab
 
@@ -40,10 +39,10 @@ const SLIDE_Y_OFFSET: float = 8.0
 # WALL INTERACTIONS
 const WALL_BOUNCE_POWER: float = 0.5
 const WALL_BOUNCE_THRESHOLD: float = 400
-const WALL_JUMP_PUSH_FORCE:float = 500.0
+const WALL_JUMP_PUSH_FORCE: float = 500.0
 
 # PHYSICS
-const WALL_GRAVITY: float  = 1.5
+const WALL_GRAVITY: float = 1.5
 const MIN_GRAVITY: float = 14.0
 const MAX_GRAVITY: float = 18.0
 ## higher = faster transition to MAX_GRAVITY
@@ -59,18 +58,18 @@ var slide_index: int = 0
 var is_crouching: bool = false
 
 # INPUT
-var vertical_input_axis: float = 0.0 # -1.0 if down 1.0 if up
-var horizontal_input_axis: float = 0.0 # -1.0 if left 1.0 if right
+var vertical_input_axis: float = 0.0  # -1.0 if down 1.0 if up
+var horizontal_input_axis: float = 0.0  # -1.0 if left 1.0 if right
 var is_coyote_time_activated: bool = false
 var is_lurch_possible: bool = false
 
 # PHYSICS
-var wall_direction: float = 0.0 # -1.0 if left 1.0 if right
+var previous_wall_direction: float = 0.0
+var wall_direction: float = 0.0  # -1.0 if left 1.0 if right
 var gravity: float = MIN_GRAVITY
 ## gravitational acceleration that gravity lerp to
 var target_gravity: float = MIN_GRAVITY
 var previous_velocity: Vector2
-
 
 # VISUALS
 var facing: int = 1
@@ -114,7 +113,7 @@ func _physics_process(delta: float) -> void:
 	vertical_input_axis = Input.get_axis("down", "up")
 	horizontal_input_axis = Input.get_axis("left", "right")
 	#if Input.is_action_pressed("crouch") and is_on_floor():
-		#_start_slide()
+	#_start_slide()
 
 	#print(is_lurch_possible)
 	entity_state.update_physics_state(is_on_floor())
@@ -149,7 +148,6 @@ func _physics_process(delta: float) -> void:
 		PlayerState.WALL_SLIDE:
 			_handle_wall_slide_and_jump()
 
-
 	_update_jump_buffer()
 	_attempt_jump()
 
@@ -183,17 +181,26 @@ func _handle_air_momentum() -> void:
 func _handle_wall_slide_and_jump() -> void:
 	gravity = WALL_GRAVITY
 	if Input.is_action_just_pressed("jump"):
-		if !is_on_wall():
-			velocity.x *= -1.0
-			velocity.y += get_wall_jump_vector(WALL_JUMP_PUSH_FORCE).y
+		#TODO: better down with a time that store the previous x velocity
+		#TODO: have a timer that will kick you off the wall after a certent time
+		#if !is_on_wall():
+		#	velocity.x *= -1.0
+		#	velocity.y += get_wall_jump_vector(WALL_JUMP_PUSH_FORCE).y
 		velocity += get_wall_jump_vector(WALL_JUMP_PUSH_FORCE)
 
 
 func _get_wall_direction() -> void:
+	var current_wall_ref = wall_direction
+
+	wall_direction = 0.0
+
 	if left_generic_ray.is_colliding():
 		wall_direction = -1.0
-	if right_generic_ray.is_colliding():
+	elif right_generic_ray.is_colliding():
 		wall_direction = 1.0
+
+	if current_wall_ref != 0.0 and current_wall_ref != wall_direction:
+		previous_wall_direction = current_wall_ref
 
 
 func _handle_run() -> void:
@@ -217,12 +224,14 @@ func _handle_crouch() -> void:
 	if !Input.is_action_pressed("crouch"):
 		_end_crouch()
 
+
 func _end_crouch() -> void:
 	if !is_crouching:
 		return
 	is_crouching = false
 
 	_resize_collider(SLIDE_Y_OFFSET)
+
 
 func _handle_idle() -> void:
 	velocity.x = move_toward(velocity.x, 0.0, FRICTION)
@@ -330,15 +339,12 @@ func _handle_ledge_boost() -> void:
 		velocity.y -= LEDGE_BOOST_POWER
 
 
-func get_wall_jump_vector( jump_power: float ) -> Vector2:
+func get_wall_jump_vector(jump_power: float) -> Vector2:
 	# Map input (-1 -> 1) to angle (0° -> 90°)
 	var angle_deg = lerp(0.0, 75.0, (vertical_input_axis + 1.0) * 0.5)
 	var angle_rad = deg_to_rad(angle_deg)
 
-	var dir := Vector2(
-		cos(angle_rad) * -wall_direction,
-		-sin(angle_rad)
-	)
+	var dir := Vector2(cos(angle_rad) * -wall_direction, -sin(angle_rad))
 
 	return dir * jump_power
 
@@ -371,11 +377,13 @@ func _update_facing_direction() -> void:
 	if horizontal_input_axis > 0.0:
 		facing = -1
 
+
 func _flip_sprite() -> void:
 	if facing == 1:
 		player_sprite.flip_h = true
 	else:
 		player_sprite.flip_h = false
+
 
 #region HFSM FUNCTIONS
 
@@ -395,6 +403,7 @@ func _change_state(new_state: PlayerState) -> void:
 func _process_grounded() -> void:
 	if Input.is_action_pressed("crouch"):
 		_start_slide()
+	previous_wall_direction = 0.0
 	target_gravity = MIN_GRAVITY
 	is_coyote_time_activated = false
 	is_lurch_possible = false
@@ -414,6 +423,7 @@ func _process_grounded() -> void:
 		_change_state(PlayerState.RUN)
 	else:
 		_change_state(PlayerState.IDLE)
+
 
 func _process_airborne(delta: float):
 	_change_state(PlayerState.AIR_MOVEMENT)
@@ -439,20 +449,21 @@ func _process_airborne(delta: float):
 
 #region CONDITIONS
 
+
 func _should_wall_slide() -> bool:
-	var is_colliding_with_wall := (
-		left_generic_ray.is_colliding()
-		or right_generic_ray.is_colliding()
+	var is_touching_wall = left_generic_ray.is_colliding() or right_generic_ray.is_colliding()
+
+	var is_new_wall = wall_direction != previous_wall_direction
+
+	var pushing_away: bool = (
+		horizontal_input_axis != 0.0 and sign(horizontal_input_axis) != wall_direction
 	)
 
-	var pushing_away: bool = horizontal_input_axis != 0.0 \
-		and sign(horizontal_input_axis) != wall_direction
-
-	return is_colliding_with_wall and velocity.y > 0.0 and not pushing_away
+	return is_touching_wall and is_new_wall and velocity.y > 0.0 and not pushing_away
 
 
 func _can_apply_ledge_boost() -> bool:
-	var is_in_velocity_window: bool  = (
+	var is_in_velocity_window: bool = (
 		velocity.y > MIN_LEDGE_BOOST_VELOCITY and velocity.y < MAX_LEDGE_BOOST_VELOCITY
 	)
 	var has_horizontal_momentum: float = abs(velocity.x) > 3.0
@@ -505,9 +516,8 @@ func _should_start_lurch_time() -> bool:
 
 func _should_slide_to_crouch() -> bool:
 	var is_inputting_horizontal: bool = (
-		abs(velocity.x) <= MAX_CROUCH_SPEED
-		and horizontal_input_axis != 0.0
-		)
+		abs(velocity.x) <= MAX_CROUCH_SPEED and horizontal_input_axis != 0.0
+	)
 	return is_inputting_horizontal or abs(velocity.x) == 0.0
 
 #endregion
