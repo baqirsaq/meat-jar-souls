@@ -56,6 +56,7 @@ var slide_boosts: int = 3
 var is_sliding: bool = false
 var slide_index: int = 0
 var is_crouching: bool = false
+var top_velocity_x: float = 0.0
 
 # INPUT
 var vertical_input_axis: float = 0.0  # -1.0 if down 1.0 if up
@@ -86,6 +87,8 @@ var current_player_state = PlayerState.RUN
 @onready var jump_buffer_timer: Timer = $JumpBufferTimer
 @onready var lurchless_timer: Timer = $LurchlessTimer
 @onready var slide_boost_cooldown_timer: Timer = $SlideBoostCooldownTimer
+@onready var perfect_wall_jump_timer: Timer = $PerfectWallJumpTimer
+@onready var on_wall_timer: Timer = $OnWallTimer
 
 # RAYCASTS
 @onready var left_head_nudge_outer: RayCast2D = $RayCast/HeadNudge/LeftHeadNudgeOuter
@@ -98,6 +101,7 @@ var current_player_state = PlayerState.RUN
 @onready var right_ledge_hop_lower: RayCast2D = $RayCast/LedgeHop/RightLedgeHopLower
 @onready var left_generic_ray: RayCast2D = $RayCast/Generic/LeftGenericRay
 @onready var right_generic_ray: RayCast2D = $RayCast/Generic/RightGenericRay
+@onready var approaching_wall: RayCast2D = $RayCast/Generic/ApproachingWall
 
 #COLLIDERS
 @onready var collision_box: CollisionShape2D = $CollisionBox
@@ -108,7 +112,9 @@ var current_player_state = PlayerState.RUN
 
 
 func _physics_process(delta: float) -> void:
+	#print( on_wall_timer.is_stopped())
 	_get_wall_direction()
+	_update_approaching_wall_ray()
 	previous_velocity = velocity
 	vertical_input_axis = Input.get_axis("down", "up")
 	horizontal_input_axis = Input.get_axis("left", "right")
@@ -166,6 +172,8 @@ func _physics_process(delta: float) -> void:
 	if _should_wall_bounce():
 		_change_state(PlayerState.WALL_BOUNCE)
 
+#region MOVEMENT FUNCTIONS
+
 
 ## Add fine air control at a cost of speed, if no arrow keys are pressed there is no loss of speed
 ## This allow to have advance movement tech like 'pseudo-slide-hops and pseudo-bunny-hops'
@@ -177,17 +185,33 @@ func _handle_air_momentum() -> void:
 		else:
 			velocity.x = move_toward(velocity.x, target_speed, LURCH_STEP)
 
+#FIXME: the wall kick of is not working
+func _start_wall_slide() -> void:
+	if on_wall_timer.is_stopped():
+		print("I AM CALLED")
+		on_wall_timer.start(1.5)
+		perfect_wall_jump_timer.start()
+
 
 func _handle_wall_slide_and_jump() -> void:
-	gravity = WALL_GRAVITY
-	if Input.is_action_just_pressed("jump"):
-		#TODO: better down with a time that store the previous x velocity
-		#TODO: have a timer that will kick you off the wall after a certent time
-		#if !is_on_wall():
-		#	velocity.x *= -1.0
-		#	velocity.y += get_wall_jump_vector(WALL_JUMP_PUSH_FORCE).y
-		velocity += get_wall_jump_vector(WALL_JUMP_PUSH_FORCE)
 
+	gravity = WALL_GRAVITY
+
+	if on_wall_timer.is_stopped():
+		velocity.x = -wall_direction * 200
+		target_gravity = MAX_GRAVITY
+		_change_state(PlayerState.AIR_MOVEMENT)
+		return
+
+	##kick off
+	if Input.is_action_just_pressed("jump"):
+		on_wall_timer.stop()
+
+		if perfect_wall_jump_timer.is_stopped():
+			velocity += get_wall_jump_vector(WALL_JUMP_PUSH_FORCE)
+		else:
+			velocity.x = -top_velocity_x * wall_direction
+			velocity.y += get_wall_jump_vector(WALL_JUMP_PUSH_FORCE).y
 
 func _get_wall_direction() -> void:
 	var current_wall_ref = wall_direction
@@ -339,6 +363,20 @@ func _handle_ledge_boost() -> void:
 		velocity.y -= LEDGE_BOOST_POWER
 
 
+#endregion
+
+#region UTILS
+
+func _update_approaching_wall_ray() -> void:
+	var dir: float = sign(approaching_wall.target_position.x)
+
+	if velocity.x != 0.0:
+		dir = sign(velocity.x)
+
+	var length: float = max(abs(velocity.x) / 10.0, 20.0)
+	approaching_wall.target_position.x = length * dir
+
+
 func get_wall_jump_vector(jump_power: float) -> Vector2:
 	# Map input (-1 -> 1) to angle (0° -> 90°)
 	var angle_deg = lerp(0.0, 75.0, (vertical_input_axis + 1.0) * 0.5)
@@ -373,17 +411,19 @@ func _resize_collider(offset: float = 0.0, size: float = 1.0) -> void:
 
 func _update_facing_direction() -> void:
 	if horizontal_input_axis < 0.0:
-		facing = 1
-	if horizontal_input_axis > 0.0:
 		facing = -1
+	if horizontal_input_axis > 0.0:
+		facing = 1
 
 
 func _flip_sprite() -> void:
-	if facing == 1:
+	if facing == -1:
 		player_sprite.flip_h = true
 	else:
 		player_sprite.flip_h = false
 
+
+#endregion
 
 #region HFSM FUNCTIONS
 
@@ -432,8 +472,15 @@ func _process_airborne(delta: float):
 		_calculate_gravity(delta)
 		target_gravity = MAX_GRAVITY
 
+
+	if approaching_wall.is_colliding():
+		top_velocity_x = max(top_velocity_x, abs(velocity.x))
+	else:
+		top_velocity_x = 0.0
+
 	if _should_wall_slide():
 		print("Wall Jump!")
+		_start_wall_slide()
 		_change_state(PlayerState.WALL_SLIDE)
 
 	if coyote_timer.is_stopped() and !is_coyote_time_activated:
