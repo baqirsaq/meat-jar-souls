@@ -5,7 +5,7 @@ extends CharacterBody2D
 # add wall climb and stamina
 # add ledge grab
 
-enum PlayerState { IDLE, RUN, SLIDE, CROUCH, WALL_BOUNCE, WALL_SLIDE, AIR_MOVEMENT }
+enum PlayerState { IDLE, RUN, SLIDE, CROUCH, WALL_BOUNCE, WALL_SLIDE, AIR_MOVEMENT, DEBUG_FLY }
 
 #region CONSTANTS
 # JUMP
@@ -19,8 +19,8 @@ const JUMP_SLIDE_MULTIPLIER: float = 0.50
 # AIR MOVEMENT
 const HEAD_NUDGE_POWER: float = 20.00
 const LEDGE_BOOST_POWER: float = 200.0
-const MIN_LEDGE_BOOST_VELOCITY = -30.0
-const MAX_LEDGE_BOOST_VELOCITY = -5.0
+const MIN_LEDGE_BOOST_VELOCITY: float = -30.0
+const MAX_LEDGE_BOOST_VELOCITY: float = -5.0
 const MAX_LURCH_SPEED: float = 300.0
 const LURCH_STEP: float = 50.0
 
@@ -76,7 +76,7 @@ var previous_velocity: Vector2
 var facing: int = 1
 
 # STATE
-var current_player_state = PlayerState.RUN
+var current_player_state: PlayerState = PlayerState.RUN
 
 # VISUALS
 @onready var player_sprite: Sprite2D = $PlayerSprite
@@ -111,6 +111,16 @@ var current_player_state = PlayerState.RUN
 #endregion
 
 
+func _ready() -> void:
+	Console.pause_enabled = true
+	Console.add_command("fly", console_player_fly)
+
+
+func console_player_fly() -> void:
+	entity_state.set_state(EntityState.State.BUSY)
+	_change_state(PlayerState.DEBUG_FLY)
+
+
 func _physics_process(delta: float) -> void:
 	#print( on_wall_timer.time_left)
 	_get_wall_direction()
@@ -131,9 +141,9 @@ func _physics_process(delta: float) -> void:
 		EntityState.State.AIRBORNE:
 			_process_airborne(delta)
 		EntityState.State.BUSY:
-			print("nothing here yet")
+			_process_busy()
 		EntityState.State.LOCKED:
-			print("nothing here yet")
+			_process_locked()
 
 	# handle current player state actions
 	_handle_current_state(delta)
@@ -160,11 +170,16 @@ func _physics_process(delta: float) -> void:
 ## This allow to have advance movement tech like 'pseudo-slide-hops and pseudo-bunny-hops'
 func _handle_air_momentum() -> void:
 	if _can_apply_air_lurch():
-		var target_speed = horizontal_input_axis * MAX_LURCH_SPEED
+		var target_speed: float = horizontal_input_axis * MAX_LURCH_SPEED
 		if abs(velocity.x) > abs(target_speed):
 			velocity.x = move_toward(velocity.x, target_speed, LURCH_STEP)
 		else:
 			velocity.x = move_toward(velocity.x, target_speed, LURCH_STEP)
+
+
+func _handle_debug_fly() -> void:
+	gravity = 0.0
+	velocity = Input.get_vector("left", "right", "up", "down") * 400.0
 
 
 func _start_wall_slide() -> void:
@@ -195,8 +210,9 @@ func _handle_wall_slide_and_jump() -> void:
 			velocity.x = -top_velocity_x * wall_direction
 			velocity.y += get_wall_jump_vector(WALL_JUMP_PUSH_FORCE).y
 
+
 func _get_wall_direction() -> void:
-	var current_wall_ref = wall_direction
+	var current_wall_ref: float = wall_direction
 
 	wall_direction = 0.0
 
@@ -210,7 +226,7 @@ func _get_wall_direction() -> void:
 
 
 func _handle_run() -> void:
-	var target_speed = horizontal_input_axis * MAX_RUN_SPEED
+	var target_speed: float = horizontal_input_axis * MAX_RUN_SPEED
 	velocity.x = move_toward(velocity.x, target_speed, GROUND_ACCELERATION)
 
 
@@ -224,7 +240,7 @@ func _start_crouch() -> void:
 
 
 func _handle_crouch() -> void:
-	var target_speed = horizontal_input_axis * MAX_CROUCH_SPEED
+	var target_speed: float = horizontal_input_axis * MAX_CROUCH_SPEED
 	velocity.x = move_toward(velocity.x, target_speed, GROUND_ACCELERATION)
 
 	if !Input.is_action_pressed("crouch"):
@@ -361,10 +377,10 @@ func _update_approaching_wall_ray() -> void:
 
 func get_wall_jump_vector(jump_power: float) -> Vector2:
 	# map input (-1 -> 1) to angle (0deg -> 90deg)
-	var angle_deg = lerp(0.0, 75.0, (vertical_input_axis + 1.0) * 0.5)
-	var angle_rad = deg_to_rad(angle_deg)
+	var angle_deg: float = lerp(0.0, 75.0, (vertical_input_axis + 1.0) * 0.5)
+	var angle_rad: float = deg_to_rad(angle_deg)
 
-	var dir := Vector2(cos(angle_rad) * -wall_direction, -sin(angle_rad))
+	var dir: Vector2 = Vector2(cos(angle_rad) * -wall_direction, -sin(angle_rad))
 
 	return dir * jump_power
 
@@ -436,6 +452,8 @@ func _handle_current_state(delta: float) -> void:
 			_handle_air_momentum()
 		PlayerState.WALL_SLIDE:
 			_handle_wall_slide_and_jump()
+		PlayerState.DEBUG_FLY:
+			_handle_debug_fly()
 
 
 func _process_grounded() -> void:
@@ -466,7 +484,7 @@ func _process_grounded() -> void:
 		_change_state(PlayerState.IDLE)
 
 
-func _process_airborne(delta: float):
+func _process_airborne(delta: float) -> void:
 	_handle_jump_cut()
 	if !_should_wall_slide():
 		_calculate_gravity(delta)
@@ -494,15 +512,25 @@ func _process_airborne(delta: float):
 		is_lurch_possible = true
 
 
+func _process_busy() -> void:
+	if Input.is_action_just_pressed("crouch") and current_player_state == PlayerState.DEBUG_FLY:
+		gravity = MAX_GRAVITY
+		entity_state.set_state(EntityState.State.AIRBORNE)
+		_change_state(PlayerState.AIR_MOVEMENT)
+
+
+func _process_locked() -> void:
+	pass
+
 #endregion
 
 #region CONDITIONS
 
 
 func _should_wall_slide() -> bool:
-	var is_touching_wall = left_generic_ray.is_colliding() or right_generic_ray.is_colliding()
+	var is_touching_wall: bool = left_generic_ray.is_colliding() or right_generic_ray.is_colliding()
 
-	var is_new_wall = wall_direction != previous_wall_direction
+	var is_new_wall: bool = wall_direction != previous_wall_direction
 
 	var pushing_away: bool = (
 		horizontal_input_axis != 0.0 and sign(horizontal_input_axis) != wall_direction
@@ -544,18 +572,18 @@ func _should_nudge_right() -> bool:
 
 
 func _can_jump() -> bool:
-	var has_jump_buffered = !jump_buffer_timer.is_stopped()
-	var is_grounded_or_in_coyote_time = !coyote_timer.is_stopped() or is_on_floor()
+	var has_jump_buffered: bool = !jump_buffer_timer.is_stopped()
+	var is_grounded_or_in_coyote_time: bool = !coyote_timer.is_stopped() or is_on_floor()
 	return has_jump_buffered and is_grounded_or_in_coyote_time
 
 
 func _should_wall_bounce() -> bool:
-	var moving_fast_enough = abs(previous_velocity.x) > WALL_BOUNCE_THRESHOLD
+	var moving_fast_enough: bool = abs(previous_velocity.x) > WALL_BOUNCE_THRESHOLD
 	return moving_fast_enough and is_on_wall()
 
 
 func _can_apply_air_lurch() -> bool:
-	var has_horizontal_input = horizontal_input_axis != 0
+	var has_horizontal_input: bool = horizontal_input_axis != 0
 	return has_horizontal_input and is_lurch_possible
 
 
