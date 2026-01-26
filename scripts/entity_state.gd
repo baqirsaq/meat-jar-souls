@@ -17,7 +17,7 @@ func update_physics_state(is_on_floor: bool) -> void:
 
 
 func _change_state(new_state: State) -> void:
-	print("State changed to: ", State.keys()[new_state])
+	#print("State changed to: ", State.keys()[new_state])
 	current_state = new_state
 
 

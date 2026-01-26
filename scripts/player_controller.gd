@@ -2,7 +2,7 @@ class_name Player
 extends CharacterBody2D
 #TODO:
 # add horizontal wallrun & wallkicks (titanfall style)
-# add wall clime and stamina
+# add wall climb and stamina
 # add ledge grab
 
 enum PlayerState { IDLE, RUN, SLIDE, CROUCH, WALL_BOUNCE, WALL_SLIDE, AIR_MOVEMENT }
@@ -112,7 +112,7 @@ var current_player_state = PlayerState.RUN
 
 
 func _physics_process(delta: float) -> void:
-	#print( on_wall_timer.is_stopped())
+	#print( on_wall_timer.time_left)
 	_get_wall_direction()
 	_update_approaching_wall_ray()
 	previous_velocity = velocity
@@ -124,6 +124,7 @@ func _physics_process(delta: float) -> void:
 	#print(is_lurch_possible)
 	entity_state.update_physics_state(is_on_floor())
 
+	# update player state based on entity state
 	match entity_state.current_state:
 		EntityState.State.GROUNDED:
 			_process_grounded()
@@ -134,25 +135,8 @@ func _physics_process(delta: float) -> void:
 		EntityState.State.LOCKED:
 			print("nothing here yet")
 
-	match current_player_state:
-		PlayerState.IDLE:
-			animator.play("player_idle")
-			_handle_idle()
-		PlayerState.RUN:
-			animator.play("player_run")
-			_handle_run()
-			slide_boost_cooldown_timer.start()
-		PlayerState.CROUCH:
-			animator.play("player_fall_idle_low")
-			_handle_crouch()
-		PlayerState.SLIDE:
-			animator.play("player_t_pose")
-			_handle_slide(delta)
-		PlayerState.AIR_MOVEMENT:
-			animator.play("player_fall_idle_low")
-			_handle_air_momentum()
-		PlayerState.WALL_SLIDE:
-			_handle_wall_slide_and_jump()
+	# handle current player state actions
+	_handle_current_state(delta)
 
 	_update_jump_buffer()
 	_attempt_jump()
@@ -162,11 +146,8 @@ func _physics_process(delta: float) -> void:
 		_handle_ledge_boost()
 
 	velocity.y += gravity
-
 	move_and_slide()
-
 	_update_facing_direction()
-
 	_flip_sprite()
 
 	if _should_wall_bounce():
@@ -185,11 +166,11 @@ func _handle_air_momentum() -> void:
 		else:
 			velocity.x = move_toward(velocity.x, target_speed, LURCH_STEP)
 
-#FIXME: the wall kick of is not working
+
 func _start_wall_slide() -> void:
 	if on_wall_timer.is_stopped():
-		print("I AM CALLED")
-		on_wall_timer.start(1.5)
+		#print("I AM CALLED")
+		on_wall_timer.start(1.0)
 		perfect_wall_jump_timer.start()
 
 
@@ -198,6 +179,7 @@ func _handle_wall_slide_and_jump() -> void:
 	gravity = WALL_GRAVITY
 
 	if on_wall_timer.is_stopped():
+		#print("boing")
 		velocity.x = -wall_direction * 200
 		target_gravity = MAX_GRAVITY
 		_change_state(PlayerState.AIR_MOVEMENT)
@@ -309,7 +291,7 @@ func _handle_slide_boost() -> void:
 		slide_index = slide_index % SLIDE_BOOST_POWER.size()
 
 		velocity.x *= SLIDE_BOOST_POWER[slide_index]
-		print("Boost applied: ", SLIDE_BOOST_POWER[slide_index])
+		#print("Boost applied: ", SLIDE_BOOST_POWER[slide_index])
 
 		slide_boosts -= 1
 		slide_index += 1
@@ -378,7 +360,7 @@ func _update_approaching_wall_ray() -> void:
 
 
 func get_wall_jump_vector(jump_power: float) -> Vector2:
-	# Map input (-1 -> 1) to angle (0° -> 90°)
+	# map input (-1 -> 1) to angle (0deg -> 90deg)
 	var angle_deg = lerp(0.0, 75.0, (vertical_input_axis + 1.0) * 0.5)
 	var angle_rad = deg_to_rad(angle_deg)
 
@@ -388,18 +370,13 @@ func get_wall_jump_vector(jump_power: float) -> Vector2:
 
 
 func _resize_collider(offset: float = 0.0, size: float = 1.0) -> void:
-	var is_reset_mode = false
 	if size == 1.0:
-		is_reset_mode = true
-
-	if is_reset_mode:
 		collision_box.scale.y = 1.0
 		left_head_nudge_outer.position.y -= offset
 		left_head_nudge_inner.position.y -= offset
 		right_head_nudge_outer.position.y -= offset
 		right_head_nudge_inner.position.y -= offset
 		collision_box.position.y -= offset
-		is_reset_mode = false
 	else:
 		collision_box.scale.y = size
 		left_head_nudge_outer.position.y += offset
@@ -427,7 +404,6 @@ func _flip_sprite() -> void:
 
 #region HFSM FUNCTIONS
 
-
 func _change_state(new_state: PlayerState) -> void:
 	if current_player_state == new_state:
 		return
@@ -440,9 +416,29 @@ func _change_state(new_state: PlayerState) -> void:
 	current_player_state = new_state
 
 
+func _handle_current_state(delta: float) -> void:
+	match current_player_state:
+		PlayerState.IDLE:
+			animator.play("player_idle")
+			_handle_idle()
+		PlayerState.RUN:
+			animator.play("player_run")
+			_handle_run()
+			slide_boost_cooldown_timer.start()
+		PlayerState.CROUCH:
+			animator.play("player_fall_idle_low")
+			_handle_crouch()
+		PlayerState.SLIDE:
+			animator.play("player_t_pose")
+			_handle_slide(delta)
+		PlayerState.AIR_MOVEMENT:
+			animator.play("player_fall_idle_low")
+			_handle_air_momentum()
+		PlayerState.WALL_SLIDE:
+			_handle_wall_slide_and_jump()
+
+
 func _process_grounded() -> void:
-	if Input.is_action_pressed("crouch"):
-		_start_slide()
 	previous_wall_direction = 0.0
 	target_gravity = MIN_GRAVITY
 	is_coyote_time_activated = false
@@ -452,13 +448,18 @@ func _process_grounded() -> void:
 	if !is_sliding and slide_boost_cooldown_timer.is_stopped():
 		slide_boosts = 3
 
+	# handle crouch/slide input
 	if Input.is_action_just_pressed("crouch"):
-		_change_state(PlayerState.CROUCH)
+		if abs(velocity.x) > MAX_CROUCH_SPEED:
+			_start_slide()
+		else:
+			_start_crouch()
 
-	if is_crouching:
-		_change_state(PlayerState.CROUCH)
-	elif is_sliding:
+	# update state based on current conditions
+	if is_sliding:
 		_change_state(PlayerState.SLIDE)
+	elif is_crouching:
+		_change_state(PlayerState.CROUCH)
 	elif horizontal_input_axis != 0.0:
 		_change_state(PlayerState.RUN)
 	else:
@@ -466,7 +467,6 @@ func _process_grounded() -> void:
 
 
 func _process_airborne(delta: float):
-	_change_state(PlayerState.AIR_MOVEMENT)
 	_handle_jump_cut()
 	if !_should_wall_slide():
 		_calculate_gravity(delta)
@@ -479,9 +479,11 @@ func _process_airborne(delta: float):
 		top_velocity_x = 0.0
 
 	if _should_wall_slide():
-		print("Wall Jump!")
-		_start_wall_slide()
-		_change_state(PlayerState.WALL_SLIDE)
+		if current_player_state != PlayerState.WALL_SLIDE:
+			_change_state(PlayerState.WALL_SLIDE)
+			_start_wall_slide()
+	else:
+		_change_state(PlayerState.AIR_MOVEMENT)
 
 	if coyote_timer.is_stopped() and !is_coyote_time_activated:
 		coyote_timer.start()
