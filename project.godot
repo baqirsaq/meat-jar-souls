@@ -8,15 +8,19 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="Meat Jar"
-config/features=PackedStringArray("4.5", "Forward Plus")
+config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
-Console="*res://addons/console/console.gd"
+Console="*uid://ouiu5xh1cs8n"
 
 [debug]
 
@@ -27,6 +31,8 @@ gdscript/warnings/inferred_declaration=2
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
+window/stretch/mode="canvas_items"
+window/stretch/scale_mode="integer"
 
 [editor_plugins]
 
@@ -67,6 +73,5 @@ crouch={
 
 [rendering]
 
-textures/canvas_textures/default_texture_filter=0
 anti_aliasing/quality/msaa_2d=3
 anti_aliasing/quality/screen_space_aa=2

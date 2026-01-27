@@ -1,7 +1,8 @@
-[gd_scene load_steps=17 format=3 uid="uid://byrbn71qtldi2"]
+[gd_scene format=3 uid="uid://byrbn71qtldi2"]
 
 [ext_resource type="Script" uid="uid://bhjm082qxdpd1" path="res://scripts/player_controller.gd" id="1_jumf5"]
 [ext_resource type="Texture2D" uid="uid://ba5p2a1qkroeo" path="res://assets/temp/player-temp.png" id="2_16d5g"]
+[ext_resource type="Material" uid="uid://3ci05716ra0c" path="res://assets/materials/pixel_art_defult.tres" id="2_rug40"]
 [ext_resource type="PackedScene" uid="uid://digpux32xmif6" path="res://assets/components/entity_state.res" id="3_insbl"]
 
 [sub_resource type="Animation" id="Animation_rug40"]
@@ -193,35 +194,33 @@ height = 32.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_dclhl"]
 radius = 17.0
 
-[node name="Player" type="CharacterBody2D"]
+[node name="Player" type="CharacterBody2D" unique_id=1661914388]
 collision_layer = 2
 collision_mask = 2
 script = ExtResource("1_jumf5")
 
-[node name="Animator" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_ah73p")
-}
+[node name="Animator" type="AnimationPlayer" parent="." unique_id=1203390905]
+libraries/ = SubResource("AnimationLibrary_ah73p")
 
-[node name="PlayerSprite" type="Sprite2D" parent="."]
+[node name="PlayerSprite" type="Sprite2D" parent="." unique_id=1939116317]
 z_index = 1
-texture_filter = 1
+material = ExtResource("2_rug40")
 texture = ExtResource("2_16d5g")
 hframes = 10
 vframes = 9
 frame = 60
 
-[node name="CollisionBox" type="CollisionShape2D" parent="."]
+[node name="CollisionBox" type="CollisionShape2D" parent="." unique_id=1569755134]
 physics_interpolation_mode = 2
 shape = SubResource("CapsuleShape2D_3mip4")
 
-[node name="HurtBox" type="CollisionShape2D" parent="."]
+[node name="HurtBox" type="CollisionShape2D" parent="." unique_id=631471009]
 visible = false
 shape = SubResource("CapsuleShape2D_lgdun")
 disabled = true
 debug_color = Color(1, 0, 0, 0.41960785)
 
-[node name="HitBox" type="CollisionShape2D" parent="."]
+[node name="HitBox" type="CollisionShape2D" parent="." unique_id=748435016]
 physics_interpolation_mode = 2
 visible = false
 position = Vector2(31, -2)
@@ -229,90 +228,90 @@ shape = SubResource("CircleShape2D_dclhl")
 disabled = true
 debug_color = Color(1, 0.4666667, 0, 0.41960785)
 
-[node name="RayCast" type="Node2D" parent="."]
+[node name="RayCast" type="Node2D" parent="." unique_id=2009951365]
 position = Vector2(31, -2)
 
-[node name="HeadNudge" type="Node2D" parent="RayCast"]
+[node name="HeadNudge" type="Node2D" parent="RayCast" unique_id=628917058]
 
-[node name="LeftHeadNudgeOuter" type="RayCast2D" parent="RayCast/HeadNudge"]
+[node name="LeftHeadNudgeOuter" type="RayCast2D" parent="RayCast/HeadNudge" unique_id=1485558151]
 position = Vector2(-41, -11)
 target_position = Vector2(0, -4)
 hit_from_inside = true
 
-[node name="LeftHeadNudgeInner" type="RayCast2D" parent="RayCast/HeadNudge"]
-position = Vector2(-38, -11)
+[node name="LeftHeadNudgeInner" type="RayCast2D" parent="RayCast/HeadNudge" unique_id=1754217378]
+position = Vector2(-36, -12)
 target_position = Vector2(0, -4)
 hit_from_inside = true
 
-[node name="RightHeadNudgeInner" type="RayCast2D" parent="RayCast/HeadNudge"]
-position = Vector2(-24, -11)
+[node name="RightHeadNudgeInner" type="RayCast2D" parent="RayCast/HeadNudge" unique_id=2056546938]
+position = Vector2(-26, -12)
 target_position = Vector2(0, -4)
 hit_from_inside = true
 
-[node name="RightHeadNudgeOuter" type="RayCast2D" parent="RayCast/HeadNudge"]
+[node name="RightHeadNudgeOuter" type="RayCast2D" parent="RayCast/HeadNudge" unique_id=1166610072]
 position = Vector2(-21, -11)
 target_position = Vector2(0, -4)
 hit_from_inside = true
 
-[node name="LedgeHop" type="Node2D" parent="RayCast"]
+[node name="LedgeHop" type="Node2D" parent="RayCast" unique_id=1332174615]
 
-[node name="LeftLedgeHopUpper" type="RayCast2D" parent="RayCast/LedgeHop"]
+[node name="LeftLedgeHopUpper" type="RayCast2D" parent="RayCast/LedgeHop" unique_id=415253190]
 position = Vector2(-41, 12)
 target_position = Vector2(-4, 0)
 hit_from_inside = true
 
-[node name="LeftLedgeHopLower" type="RayCast2D" parent="RayCast/LedgeHop"]
+[node name="LeftLedgeHopLower" type="RayCast2D" parent="RayCast/LedgeHop" unique_id=1155787420]
 position = Vector2(-41, 17)
 target_position = Vector2(-4, 0)
 hit_from_inside = true
 
-[node name="RightLedgeHopUpper" type="RayCast2D" parent="RayCast/LedgeHop"]
+[node name="RightLedgeHopUpper" type="RayCast2D" parent="RayCast/LedgeHop" unique_id=354855126]
 position = Vector2(-21, 12)
 target_position = Vector2(4, 0)
 hit_from_inside = true
 
-[node name="RightLedgeHopLower" type="RayCast2D" parent="RayCast/LedgeHop"]
+[node name="RightLedgeHopLower" type="RayCast2D" parent="RayCast/LedgeHop" unique_id=407674472]
 position = Vector2(-21, 17)
 target_position = Vector2(4, 0)
 hit_from_inside = true
 
-[node name="Generic" type="Node2D" parent="RayCast"]
+[node name="Generic" type="Node2D" parent="RayCast" unique_id=2093818890]
 
-[node name="ApproachingWall" type="RayCast2D" parent="RayCast/Generic"]
+[node name="ApproachingWall" type="RayCast2D" parent="RayCast/Generic" unique_id=1204798178]
 position = Vector2(-31, 2)
 target_position = Vector2(70, 0)
 hit_from_inside = true
 
-[node name="LeftGenericRay" type="RayCast2D" parent="RayCast/Generic"]
+[node name="LeftGenericRay" type="RayCast2D" parent="RayCast/Generic" unique_id=480327609]
 position = Vector2(-41, 2)
 target_position = Vector2(-6, 0)
 hit_from_inside = true
 
-[node name="RightGenericRay" type="RayCast2D" parent="RayCast/Generic"]
+[node name="RightGenericRay" type="RayCast2D" parent="RayCast/Generic" unique_id=1768934600]
 position = Vector2(-21, 2)
 target_position = Vector2(6, 0)
 hit_from_inside = true
 
-[node name="CoyoteTimer" type="Timer" parent="."]
+[node name="CoyoteTimer" type="Timer" parent="." unique_id=2112910672]
 wait_time = 0.2
 one_shot = true
 
-[node name="JumpBufferTimer" type="Timer" parent="."]
+[node name="JumpBufferTimer" type="Timer" parent="." unique_id=314053381]
 wait_time = 0.2
 one_shot = true
 
-[node name="SlideBoostCooldownTimer" type="Timer" parent="."]
+[node name="SlideBoostCooldownTimer" type="Timer" parent="." unique_id=1200698525]
 one_shot = true
 
-[node name="OnWallTimer" type="Timer" parent="."]
+[node name="OnWallTimer" type="Timer" parent="." unique_id=705948890]
 one_shot = true
 
-[node name="PerfectWallJumpTimer" type="Timer" parent="."]
+[node name="PerfectWallJumpTimer" type="Timer" parent="." unique_id=1723875992]
 wait_time = 0.15
 one_shot = true
 
-[node name="LurchlessTimer" type="Timer" parent="."]
+[node name="LurchlessTimer" type="Timer" parent="." unique_id=471222749]
 wait_time = 0.1
 one_shot = true
 
-[node name="EntityState" parent="." instance=ExtResource("3_insbl")]
+[node name="EntityState" parent="." unique_id=244126220 instance=ExtResource("3_insbl")]
