@@ -11,6 +11,8 @@
 .import/
 export_preset.cfg
 editor_layout.cfg
+.vscode/
+
 
 # --- System/OS Files ---
 .DS_Store
