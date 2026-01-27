@@ -1,5 +1,5 @@
 shader_type canvas_item;
-render_mode unshaded;
+render_mode blend_mix;
 
 // Texture must have 'Filter'-flag enabled!
 
