@@ -7,7 +7,8 @@ extends CharacterBody2D
 
 enum PlayerState { IDLE, RUN, SLIDE, CROUCH, WALL_BOUNCE, WALL_SLIDE, AIR_MOVEMENT, DEBUG_FLY }
 
-#region CONSTANTS
+#region Private Constants
+
 # JUMP
 const JUMP_HEIGHT: float = -650.0
 ## how fast does the jump stop after it cut, makes the transition really smooth
@@ -47,10 +48,12 @@ const MIN_GRAVITY: float = 14.0
 const MAX_GRAVITY: float = 18.0
 ## higher = faster transition to MAX_GRAVITY
 const GRAVITY_SMOOTHING: float = 5.0
+
 #endregion
 
-#region VARIABLES
-# MOVEMENT
+#region Private Variables
+
+# Movement
 var wall_contact_coyote: float = 0.0
 var slide_boosts: int = 3
 var is_sliding: bool = false
@@ -58,13 +61,13 @@ var slide_index: int = 0
 var is_crouching: bool = false
 var top_velocity_x: float = 0.0
 
-# INPUT
+# Input
 var vertical_input_axis: float = 0.0  # -1.0 if down 1.0 if up
 var horizontal_input_axis: float = 0.0  # -1.0 if left 1.0 if right
 var is_coyote_time_activated: bool = false
 var is_lurch_possible: bool = false
 
-# PHYSICS
+# Physics
 var previous_wall_direction: float = 0.0
 var wall_direction: float = 0.0  # -1.0 if left 1.0 if right
 var gravity: float = MIN_GRAVITY
@@ -72,17 +75,21 @@ var gravity: float = MIN_GRAVITY
 var target_gravity: float = MIN_GRAVITY
 var previous_velocity: Vector2
 
-# VISUALS
+# Visuals
 var facing: int = 1
 
-# STATE
+# State
 var current_player_state: PlayerState = PlayerState.RUN
 
-# VISUALS
+#endregion
+
+#region Node References
+
+# Visuals
 @onready var player_sprite: Sprite2D = $PlayerSprite
 @onready var animator: AnimationPlayer = $Animator
 
-# TIMERS
+# Timers
 @onready var coyote_timer: Timer = $CoyoteTimer
 @onready var jump_buffer_timer: Timer = $JumpBufferTimer
 @onready var lurchless_timer: Timer = $LurchlessTimer
@@ -90,7 +97,7 @@ var current_player_state: PlayerState = PlayerState.RUN
 @onready var perfect_wall_jump_timer: Timer = $PerfectWallJumpTimer
 @onready var on_wall_timer: Timer = $OnWallTimer
 
-# RAYCASTS
+# Raycast
 @onready var left_head_nudge_outer: RayCast2D = $RayCast/HeadNudge/LeftHeadNudgeOuter
 @onready var left_head_nudge_inner: RayCast2D = $RayCast/HeadNudge/LeftHeadNudgeInner
 @onready var right_head_nudge_inner: RayCast2D = $RayCast/HeadNudge/RightHeadNudgeInner
@@ -103,35 +110,27 @@ var current_player_state: PlayerState = PlayerState.RUN
 @onready var right_generic_ray: RayCast2D = $RayCast/Generic/RightGenericRay
 @onready var approaching_wall: RayCast2D = $RayCast/Generic/ApproachingWall
 
-#COLLIDERS
+# Colliders
 @onready var collision_box: CollisionShape2D = $CollisionBox
 
-#COMPONENTS
+# Components
 @onready var entity_state: EntityState = $EntityState
+
 #endregion
 
-
 func _ready() -> void:
+	# Console
 	Console.pause_enabled = true
 	Console.add_command("fly", console_player_fly)
 
 
-func console_player_fly() -> void:
-	entity_state.set_state(EntityState.State.BUSY)
-	_change_state(PlayerState.DEBUG_FLY)
-
-
 func _physics_process(delta: float) -> void:
-	#print( on_wall_timer.time_left)
 	_get_wall_direction()
 	_update_approaching_wall_ray()
 	previous_velocity = velocity
 	vertical_input_axis = Input.get_axis("down", "up")
 	horizontal_input_axis = Input.get_axis("left", "right")
-	#if Input.is_action_pressed("crouch") and is_on_floor():
-	#_start_slide()
 
-	#print(is_lurch_possible)
 	entity_state.update_physics_state(is_on_floor())
 
 	# update player state based on entity state
@@ -163,8 +162,7 @@ func _physics_process(delta: float) -> void:
 	if _should_wall_bounce():
 		_change_state(PlayerState.WALL_BOUNCE)
 
-#region MOVEMENT FUNCTIONS
-
+#region Movement Functions
 
 ## Add fine air control at a cost of speed, if no arrow keys are pressed there is no loss of speed
 ## This allow to have advance movement tech like 'pseudo-slide-hops and pseudo-bunny-hops'
@@ -184,7 +182,6 @@ func _handle_debug_fly() -> void:
 
 func _start_wall_slide() -> void:
 	if on_wall_timer.is_stopped():
-		#print("I AM CALLED")
 		on_wall_timer.start(1.0)
 		perfect_wall_jump_timer.start()
 
@@ -194,7 +191,6 @@ func _handle_wall_slide_and_jump() -> void:
 	gravity = WALL_GRAVITY
 
 	if on_wall_timer.is_stopped():
-		#print("boing")
 		velocity.x = -wall_direction * 200
 		target_gravity = MAX_GRAVITY
 		_change_state(PlayerState.AIR_MOVEMENT)
@@ -307,7 +303,6 @@ func _handle_slide_boost() -> void:
 		slide_index = slide_index % SLIDE_BOOST_POWER.size()
 
 		velocity.x *= SLIDE_BOOST_POWER[slide_index]
-		#print("Boost applied: ", SLIDE_BOOST_POWER[slide_index])
 
 		slide_boosts -= 1
 		slide_index += 1
@@ -360,10 +355,9 @@ func _handle_ledge_boost() -> void:
 	if _should_boost_right_ledge():
 		velocity.y -= LEDGE_BOOST_POWER
 
-
 #endregion
 
-#region UTILS
+#region Utils
 
 func _update_approaching_wall_ray() -> void:
 	var dir: float = sign(approaching_wall.target_position.x)
@@ -415,10 +409,9 @@ func _flip_sprite() -> void:
 	else:
 		player_sprite.flip_h = false
 
-
 #endregion
 
-#region HFSM FUNCTIONS
+#region HFSM
 
 func _change_state(new_state: PlayerState) -> void:
 	if current_player_state == new_state:
@@ -524,8 +517,7 @@ func _process_locked() -> void:
 
 #endregion
 
-#region CONDITIONS
-
+#region Conditions
 
 func _should_wall_slide() -> bool:
 	var is_touching_wall: bool = left_generic_ray.is_colliding() or right_generic_ray.is_colliding()
@@ -598,3 +590,9 @@ func _should_slide_to_crouch() -> bool:
 	return is_inputting_horizontal or abs(velocity.x) == 0.0
 
 #endregion
+
+#region Public API
+
+func console_player_fly() -> void:
+	entity_state.set_state(EntityState.State.BUSY)
+	_change_state(PlayerState.DEBUG_FLY)

@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://bhjm082qxdpd1" path="res://scripts/player_controller.gd" id="1_jumf5"]
 [ext_resource type="Texture2D" uid="uid://ba5p2a1qkroeo" path="res://assets/temp/player-temp.png" id="2_16d5g"]
-[ext_resource type="Material" uid="uid://3ci05716ra0c" path="res://assets/materials/pixel_art_defult.tres" id="2_rug40"]
 [ext_resource type="PackedScene" uid="uid://digpux32xmif6" path="res://assets/components/entity_state.res" id="3_insbl"]
 
 [sub_resource type="Animation" id="Animation_rug40"]
@@ -197,7 +196,7 @@ radius = 17.0
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rug40"]
 closed = false
 cull_mode = 1
-polygon = PackedVector2Array(-6, -16, 6, -16, 6, 16, -6, 16)
+polygon = PackedVector2Array(-12, -20, 11, -20, 11, 16, -12, 16)
 
 [node name="Player" type="CharacterBody2D" unique_id=1661914388]
 collision_layer = 2
@@ -209,7 +208,6 @@ libraries/ = SubResource("AnimationLibrary_ah73p")
 
 [node name="PlayerSprite" type="Sprite2D" parent="." unique_id=1939116317]
 z_index = 1
-material = ExtResource("2_rug40")
 texture = ExtResource("2_16d5g")
 hframes = 10
 vframes = 9
