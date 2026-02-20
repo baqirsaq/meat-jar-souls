@@ -1,6 +1,0 @@
-[gd_resource type="ShaderMaterial" format=3 uid="uid://3ci05716ra0c"]
-
-[ext_resource type="Shader" uid="uid://ukwj8q4k5wv5" path="res://shaders/pixel_art_defult.gdshader" id="1_gnq34"]
-
-[resource]
-shader = ExtResource("1_gnq34")
