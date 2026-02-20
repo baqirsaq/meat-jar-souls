@@ -1,7 +1,7 @@
-extends CharacterBody2D
 class_name Player
+extends Character
 
-@export var current_speed: float = 300.0
+## Manages player higher level behaviour
 
 @onready var animation_tree: AnimationTree = $AnimationTree
 @onready var player_sprite: Sprite2D = $PlayerSprite
@@ -10,16 +10,13 @@ class_name Player
 func _ready() -> void:
 	animation_tree.active = true
 
-func _physics_process(delta: float) -> void:
-	# Add the gravity.
-	if not is_on_floor():
-		velocity += get_gravity() * delta
 
-	var direction := Input.get_axis("left", "right")
-	if direction and character_state_machine.can_move():
-		velocity.x = direction * current_speed
-	else:
-		velocity.x = move_toward(velocity.x, 0, current_speed)
+func _physics_process(delta: float) -> void:
+	#TODO: Update it to work with the InputPackage
+	var direction: float = Input.get_axis("left", "right")
+
+	apply_gravity(delta)
+	_handle_horizontal_movement(direction)
 
 	move_and_slide()
 
@@ -27,11 +24,20 @@ func _physics_process(delta: float) -> void:
 	_update_animation(direction)
 	_update_facing_directions(direction)
 
+
 func _update_animation(direction) -> void:
 	animation_tree.set("parameters/move/blend_position", direction)
+
 
 func _update_facing_directions(direction) -> void:
 	if direction > 0:
 		player_sprite.flip_h = false
 	elif direction < 0:
 		player_sprite.flip_h = true
+
+
+func _handle_horizontal_movement(direction: float) -> void:
+	if direction and character_state_machine.can_move():
+		velocity.x = move_toward(velocity.x, speed * direction, acceleration)
+	else:
+		velocity.x = move_toward(velocity.x, 0, deceleration)

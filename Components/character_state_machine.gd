@@ -1,9 +1,9 @@
-extends Node
 class_name CharacterStateMachine
+extends Node
 
 ## Manages the switching and execution of character states.
 
-@export var character: CharacterBody2D
+@export var character: Character
 @export var animation_tree: AnimationTree
 @export var initial_state: State
 
@@ -15,18 +15,17 @@ var states: Array[State] = []
 # ====================
 
 func _ready() -> void:
-	await owner.ready # Ensure the character is fully loaded
+	await owner.ready
 	_init_states()
 
 
 func _physics_process(delta: float) -> void:
 	if not current_state:
 		return
-	
-	# Check for state transitions
+
 	if current_state.next_state:
 		switch_state(current_state.next_state)
-	
+
 	current_state.state_process(delta)
 
 
@@ -48,7 +47,7 @@ func switch_state(new_state: State) -> void:
 	if current_state:
 		current_state.on_exit()
 		current_state.next_state = null
-	
+
 	current_state = new_state
 	current_state.on_enter()
 
@@ -64,8 +63,7 @@ func _init_states() -> void:
 			child.playback = animation_tree["parameters/playback"]
 		else:
 			push_warning("Child '%s' is not a State node." % child.name)
-	
-	# Initialize with the designated starting state
+
 	if initial_state:
 		switch_state(initial_state)
 	elif states.size() > 0:

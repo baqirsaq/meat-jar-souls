@@ -1,23 +1,18 @@
-extends Node
 class_name State
+extends Node
 
-## The base class for all character states. 
+## The base class for all character states.
 ## Manages entry, exit, and per-frame logic.
 
 @export var can_move: bool = true
 
-var character: CharacterBody2D
+var character: Character
 var playback: AnimationNodeStateMachinePlayback
 var next_state: State
 
 # ====================
 # VIRTUAL METHODS
 # ====================
-
-
-## Handles physics or frame processing.
-func state_process(delta: float) -> void:
-	pass
 
 
 ## Called when the CharacterStateMachine switches to this state.
@@ -31,5 +26,5 @@ func on_exit() -> void:
 
 
 ## Handles input events specifically for this state.
-func state_input(event: InputEvent) -> void:
+func state_input(_event: InputEvent) -> void:
 	pass

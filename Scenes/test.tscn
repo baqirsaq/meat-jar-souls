@@ -1,22 +1,27 @@
 [gd_scene format=3 uid="uid://io6c4t26oefr"]
 
-[ext_resource type="Texture2D" uid="uid://c4ufm7ffkj84j" path="res://icon.svg" id="1_lc1oi"]
-[ext_resource type="PackedScene" uid="uid://cp0ud44upr6pe" path="res://Scenes/player.tscn" id="2_8od7v"]
+[ext_resource type="Texture2D" uid="uid://duoava2yll1kv" path="res://Assets/debug_tileset.png" id="1_8od7v"]
+[ext_resource type="PackedScene" uid="uid://cp0ud44upr6pe" path="res://Player/player.tscn" id="2_8od7v"]
 
-[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_8od7v"]
-distance = -432.0
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_qc4db"]
+texture = ExtResource("1_8od7v")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-32, 32, 32, 32, 32, -32, -32, -32)
+
+[sub_resource type="TileSet" id="TileSet_ys1qc"]
+tile_size = Vector2i(64, 64)
+physics_layer_0/collision_layer = 1
+sources/0 = SubResource("TileSetAtlasSource_qc4db")
 
 [node name="Node2D" type="Node2D" unique_id=1998949782]
 
-[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=610062805]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=1974440030]
-shape = SubResource("WorldBoundaryShape2D_8od7v")
-
-[node name="Icon" type="Sprite2D" parent="StaticBody2D" unique_id=1293495024]
-position = Vector2(466.99988, 495)
-scale = Vector2(23.734377, 1)
-texture = ExtResource("1_lc1oi")
+[node name="TileMap" type="TileMap" parent="." unique_id=678409963]
+tile_set = SubResource("TileSet_ys1qc")
+format = 2
+layer_0/tile_data = PackedInt32Array(196599, 0, 0, 196600, 0, 0, 196601, 0, 0, 196602, 0, 0, 196603, 0, 0, 196604, 0, 0, 196605, 0, 0, 196606, 0, 0, 196607, 0, 0, 131072, 0, 0, 131073, 0, 0, 131074, 0, 0, 131075, 0, 0, 131076, 0, 0, 131077, 0, 0, 131078, 0, 0, 131079, 0, 0, 131080, 0, 0, 131081, 0, 0, 131082, 0, 0, 131083, 0, 0, 131084, 0, 0, 131085, 0, 0, 131086, 0, 0, 131087, 0, 0, 131088, 0, 0, 131089, 0, 0, 131090, 0, 0, 196598, 0, 0, 196597, 0, 0, 131091, 0, 0, 196596, 0, 0, 196595, 0, 0, 131059, 0, 0, 65523, 0, 0, -13, 0, 0, -65549, 0, 0, -131085, 0, 0, -196621, 0, 0, -262157, 0, 0, -327693, 0, 0, -393229, 0, 0, -458765, 0, 0, -524301, 0, 0, -65524, 0, 0, -65523, 0, 0, -65522, 0, 0, -65521, 0, 0, -65520, 0, 0, -196591, 0, 0, -196590, 0, 0, -196589, 0, 0, 131092, 0, 0, 131093, 0, 0, 131094, 0, 0, 131095, 0, 0, 131096, 0, 0, 131097, 0, 0, 131098, 0, 0, 196634, 0, 0, 262170, 0, 0, 327706, 0, 0, 393242, 0, 0, 458778, 0, 0, 524314, 0, 0, 589850, 0, 0, 655386, 0, 0, 720922, 0, 0, 786458, 0, 0, 851994, 0, 0, 917530, 0, 0, 983066, 0, 0, 1048602, 0, 0, 1048603, 0, 0, 1048604, 0, 0, 1048605, 0, 0, 1048606, 0, 0, 1048607, 0, 0, 1048608, 0, 0, 1048609, 0, 0, 1048610, 0, 0, 1048611, 0, 0, 983075, 0, 0, 917539, 0, 0, 786467, 0, 0, 720931, 0, 0, 852003, 0, 0, 655395, 0, 0, 589859, 0, 0, 524323, 0, 0, 458787, 0, 0, 393251, 0, 0, 327715, 0, 0, 262179, 0, 0, 196643, 0, 0, 131107, 0, 0, 65571, 0, 0, 852002, 0, 0, 852001, 0, 0, 852000, 0, 0, 655390, 0, 0, 655391, 0, 0, 458786, 0, 0, 458785, 0, 0, 327710, 0, 0, 327711, 0, 0, 131105, 0, 0, 131106, 0, 0, 31, 0, 0, 30, 0, 0, -131043, 0, 0, -131044, 0, 0, -131045, 0, 0, 35, 0, 0, -65501, 0, 0, -131037, 0, 0, -196573, 0, 0, -262109, 0, 0, -327645, 0, 0, -393181, 0, 0, -458717, 0, 0, -524253, 0, 0, -589789, 0, 0, -655325, 0, 0, -720861, 0, 0)
 
 [node name="Player" parent="." unique_id=654311333 instance=ExtResource("2_8od7v")]
 position = Vector2(6, -55)
+
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=1478393608]
