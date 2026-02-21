@@ -20,7 +20,7 @@ func on_enter() -> void:
 @warning_ignore("unused_parameter")
 func state_process(_delta: float) -> void:
 	if character.velocity.y > 0.0:
-		playback.travel("fall_idle")
+		playback.start("jump_end")
 	else:
 		_handle_jump_cut()
 

@@ -11,6 +11,8 @@ const TOGGLEABLE_ACTIONS = [
 	"right",
 	"jump",
 	"sprint",
+	"guard",
+	"light_attack"
 ]
 
 const DEFAULT_MODES: Dictionary = {
@@ -20,6 +22,8 @@ const DEFAULT_MODES: Dictionary = {
 	"right": InputMode.HOLD,
 	"jump": InputMode.HOLD,
 	"sprint": InputMode.HOLD,
+	"guard": InputMode.HOLD,
+	"light_attack": InputMode.HOLD
 }
 
 # --- Input State ---

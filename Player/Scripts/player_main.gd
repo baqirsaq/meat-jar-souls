@@ -21,12 +21,14 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 # ---- Update Visuals ---- #
-	_update_animation(direction)
+	_update_animation()
 	_update_facing_directions(direction)
 
 
-func _update_animation(direction) -> void:
-	animation_tree.set("parameters/move/blend_position", direction)
+func _update_animation() -> void:
+	var movement_ratio = velocity.x / speed
+	animation_tree.set("parameters/move/blend_position", movement_ratio)
+	animation_tree.set("parameters/sprint/blend_position", movement_ratio)
 
 
 func _update_facing_directions(direction) -> void:
