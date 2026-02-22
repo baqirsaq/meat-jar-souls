@@ -4,6 +4,19 @@ extends Node
 # Enum for input mode
 enum InputMode { HOLD, TOGGLE }
 
+const GAME_ACTIONS = [
+	"up",
+	"down",
+	"left",
+	"right",
+	"jump",
+	"sprint",
+	"guard",
+	"light_attack"
+]
+
+const UI_ACTIONS = []
+
 const TOGGLEABLE_ACTIONS = [
 	"up",
 	"down",
@@ -91,3 +104,11 @@ func get_mode(action: String) -> InputMode:
 func toggle_mode(action: String) -> void:
 	var current = get_mode(action)
 	set_mode(action, InputMode.TOGGLE if current == InputMode.HOLD else InputMode.HOLD)
+
+
+func pause_game_actions() -> void:
+	pass #TODO:
+
+
+func pause_ui_actions() -> void:
+	pass #TODO:

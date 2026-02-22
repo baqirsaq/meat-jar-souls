@@ -17,11 +17,16 @@ config/icon="res://icon.svg"
 [autoload]
 
 InputPackage="*uid://cdigd38ru6op0"
+Console="*uid://ouiu5xh1cs8n"
 
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/console/plugin.cfg")
 
 [input]
 
@@ -68,8 +73,9 @@ light_attack={
 
 [layer_names]
 
-2d_physics/layer_1="enemie_hurtbox"
-2d_physics/layer_2="player_hurtbox"
+2d_physics/layer_5="Player"
+2d_physics/layer_6="Enemy"
+2d_physics/layer_7="Breakable"
 
 [physics]
 

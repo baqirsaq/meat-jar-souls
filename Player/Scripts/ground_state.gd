@@ -3,6 +3,7 @@ extends State
 @export var air_state: State
 @export var sprint_state: State
 @export var light_attack_state: State
+@export var guard_state: State
 @export var jump_power: float = -800.0
 @export var speed: float = 400.0
 @export var ground_acceleration: float = 200.0
@@ -25,16 +26,23 @@ func state_process(delta: float) -> void:
 		if InputPackage.is_pressed("jump"):
 			playback.travel("jump_start")
 		if InputPackage.is_held("sprint"):
-			_handle_sprint()
+			_sprint()
 		if InputPackage.is_pressed("light_attack"):
 			_light_attack()
+		if InputPackage.is_held("guard"):
+			_guard()
+
+
+func _guard() -> void:
+	next_state = guard_state
+	playback.travel("parry")
 
 
 func _light_attack() -> void:
 	next_state = light_attack_state
 	playback.travel("light_attack_1")
 
-func _handle_sprint() -> void:
+func _sprint() -> void:
 	next_state = sprint_state
 	playback.travel("sprint")
 

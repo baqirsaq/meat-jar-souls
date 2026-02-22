@@ -2,6 +2,9 @@
 
 [ext_resource type="Texture2D" uid="uid://duoava2yll1kv" path="res://Assets/debug_tileset.png" id="1_8od7v"]
 [ext_resource type="PackedScene" uid="uid://cp0ud44upr6pe" path="res://Player/player.tscn" id="2_8od7v"]
+[ext_resource type="PackedScene" uid="uid://dttlmwowmw2mo" path="res://Scenes/debug_punching_bag.tscn" id="3_35xla"]
+[ext_resource type="Texture2D" uid="uid://dlo32sjovbgmd" path="res://Assets/Debug/angry_godot.png" id="5_35xla"]
+[ext_resource type="Script" uid="uid://ba7diq1tyi3hn" path="res://Components/attack_area.gd" id="6_i3aeo"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_qc4db"]
 texture = ExtResource("1_8od7v")
@@ -14,14 +17,95 @@ tile_size = Vector2i(64, 64)
 physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_qc4db")
 
+[sub_resource type="Animation" id="Animation_i3aeo"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_5wyu1"]
+resource_name = "parry_test"
+length = 1.2083334
+loop_mode = 1
+step = 0.041666668
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.7083333, 0.8333333, 0.9583333, 1.0833334),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AttackArea")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.625),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [0.1],
+"method": &"activate"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_0c07c"]
+_data = {
+&"RESET": SubResource("Animation_i3aeo"),
+&"parry_test": SubResource("Animation_5wyu1")
+}
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5wyu1"]
+size = Vector2(64, 94)
+
 [node name="Node2D" type="Node2D" unique_id=1998949782]
 
 [node name="TileMap" type="TileMap" parent="." unique_id=678409963]
 tile_set = SubResource("TileSet_ys1qc")
 format = 2
-layer_0/tile_data = PackedInt32Array(196599, 0, 0, 196600, 0, 0, 196601, 0, 0, 196602, 0, 0, 196603, 0, 0, 196604, 0, 0, 196605, 0, 0, 196606, 0, 0, 196607, 0, 0, 131072, 0, 0, 131073, 0, 0, 131074, 0, 0, 131075, 0, 0, 131076, 0, 0, 131077, 0, 0, 131078, 0, 0, 131079, 0, 0, 131080, 0, 0, 131081, 0, 0, 131082, 0, 0, 131083, 0, 0, 131084, 0, 0, 131085, 0, 0, 131086, 0, 0, 131087, 0, 0, 131088, 0, 0, 131089, 0, 0, 131090, 0, 0, 196598, 0, 0, 196597, 0, 0, 131091, 0, 0, 196596, 0, 0, 196595, 0, 0, 131059, 0, 0, 65523, 0, 0, -13, 0, 0, -65549, 0, 0, -131085, 0, 0, -196621, 0, 0, -262157, 0, 0, -327693, 0, 0, -393229, 0, 0, -458765, 0, 0, -524301, 0, 0, -65524, 0, 0, -65523, 0, 0, -65522, 0, 0, -65521, 0, 0, -65520, 0, 0, -196591, 0, 0, -196590, 0, 0, -196589, 0, 0, 131092, 0, 0, 131093, 0, 0, 131094, 0, 0, 131095, 0, 0, 131096, 0, 0, 131097, 0, 0, 131098, 0, 0, 196634, 0, 0, 262170, 0, 0, 327706, 0, 0, 393242, 0, 0, 458778, 0, 0, 524314, 0, 0, 589850, 0, 0, 655386, 0, 0, 720922, 0, 0, 786458, 0, 0, 851994, 0, 0, 917530, 0, 0, 983066, 0, 0, 1048602, 0, 0, 1048603, 0, 0, 1048604, 0, 0, 1048605, 0, 0, 1048606, 0, 0, 1048607, 0, 0, 1048608, 0, 0, 1048609, 0, 0, 1048610, 0, 0, 1048611, 0, 0, 983075, 0, 0, 917539, 0, 0, 786467, 0, 0, 720931, 0, 0, 852003, 0, 0, 655395, 0, 0, 589859, 0, 0, 524323, 0, 0, 458787, 0, 0, 393251, 0, 0, 327715, 0, 0, 262179, 0, 0, 196643, 0, 0, 131107, 0, 0, 65571, 0, 0, 852002, 0, 0, 852001, 0, 0, 852000, 0, 0, 655390, 0, 0, 655391, 0, 0, 458786, 0, 0, 458785, 0, 0, 327710, 0, 0, 327711, 0, 0, 131105, 0, 0, 131106, 0, 0, 31, 0, 0, 30, 0, 0, -131043, 0, 0, -131044, 0, 0, -131045, 0, 0, 35, 0, 0, -65501, 0, 0, -131037, 0, 0, -196573, 0, 0, -262109, 0, 0, -327645, 0, 0, -393181, 0, 0, -458717, 0, 0, -524253, 0, 0, -589789, 0, 0, -655325, 0, 0, -720861, 0, 0)
+layer_0/tile_data = PackedInt32Array(196599, 0, 0, 196600, 0, 0, 196601, 0, 0, 196602, 0, 0, 196603, 0, 0, 196604, 0, 0, 196605, 0, 0, 196606, 0, 0, 196607, 0, 0, 131072, 0, 0, 131073, 0, 0, 131074, 0, 0, 131075, 0, 0, 131076, 0, 0, 131077, 0, 0, 131078, 0, 0, 131079, 0, 0, 131080, 0, 0, 131081, 0, 0, 131082, 0, 0, 131083, 0, 0, 131084, 0, 0, 131085, 0, 0, 131086, 0, 0, 131087, 0, 0, 131088, 0, 0, 131089, 0, 0, 131090, 0, 0, 196598, 0, 0, 196597, 0, 0, 131091, 0, 0, 196596, 0, 0, 196595, 0, 0, 131059, 0, 0, 65523, 0, 0, -13, 0, 0, -65549, 0, 0, -131085, 0, 0, -196621, 0, 0, -262157, 0, 0, -327693, 0, 0, -393229, 0, 0, -458765, 0, 0, -524301, 0, 0, -65524, 0, 0, -65523, 0, 0, -65522, 0, 0, -65521, 0, 0, -65520, 0, 0, -196591, 0, 0, -196590, 0, 0, -196589, 0, 0, 131092, 0, 0, 131093, 0, 0, 131094, 0, 0, 131095, 0, 0, 131096, 0, 0, 131097, 0, 0, 131098, 0, 0, 196634, 0, 0, 262170, 0, 0, 327706, 0, 0, 393242, 0, 0, 458778, 0, 0, 524314, 0, 0, 589850, 0, 0, 655386, 0, 0, 720922, 0, 0, 786458, 0, 0, 851994, 0, 0, 917530, 0, 0, 983066, 0, 0, 1048602, 0, 0, 1048603, 0, 0, 1048604, 0, 0, 1048605, 0, 0, 1048606, 0, 0, 1048607, 0, 0, 1048608, 0, 0, 1048609, 0, 0, 1048610, 0, 0, 1048611, 0, 0, 983075, 0, 0, 917539, 0, 0, 786467, 0, 0, 720931, 0, 0, 852003, 0, 0, 655395, 0, 0, 589859, 0, 0, 524323, 0, 0, 458787, 0, 0, 393251, 0, 0, 327715, 0, 0, 262179, 0, 0, 196643, 0, 0, 131107, 0, 0, 65571, 0, 0, 852002, 0, 0, 852001, 0, 0, 852000, 0, 0, 655390, 0, 0, 655391, 0, 0, 458786, 0, 0, 458785, 0, 0, 327710, 0, 0, 327711, 0, 0, 131105, 0, 0, 131106, 0, 0, 31, 0, 0, 30, 0, 0, -131043, 0, 0, -131044, 0, 0, -131045, 0, 0, 35, 0, 0, -65501, 0, 0, -131037, 0, 0, -196573, 0, 0, -262109, 0, 0, -327645, 0, 0, -393181, 0, 0, -458717, 0, 0, -524253, 0, 0, -589789, 0, 0, -655325, 0, 0, -720861, 0, 0, -589790, 0, 0, -589791, 0, 0, -589792, 0, 0, -589793, 0, 0, -589794, 0, 0, -589795, 0, 0, -786397, 0, 0, -851933, 0, 0, -589796, 0, 0, -589797, 0, 0, -589798, 0, 0, -589799, 0, 0, -589801, 0, 0, -589800, 0, 0, -589802, 0, 0, -589803, 0, 0, -589804, 0, 0, -589805, 0, 0, -589806, 0, 0, -589807, 0, 0, -393203, 0, 0, -393202, 0, 0, -393201, 0, 0)
 
 [node name="Player" parent="." unique_id=654311333 instance=ExtResource("2_8od7v")]
 position = Vector2(6, -55)
 
 [node name="Camera2D" type="Camera2D" parent="Player" unique_id=1478393608]
+
+[node name="PunchingBag" parent="." unique_id=814385084 instance=ExtResource("3_35xla")]
+position = Vector2(462, 48.5)
+
+[node name="AngryGodot" type="Sprite2D" parent="." unique_id=1071335759]
+position = Vector2(2112, -639)
+texture = ExtResource("5_35xla")
+hframes = 4
+vframes = 3
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="AngryGodot" unique_id=1134595280]
+libraries/ = SubResource("AnimationLibrary_0c07c")
+autoplay = &"parry_test"
+
+[node name="AttackArea" type="Area2D" parent="AngryGodot" unique_id=742190383]
+collision_layer = 0
+collision_mask = 16
+script = ExtResource("6_i3aeo")
+damage = 15
+metadata/_custom_type_script = "uid://ba7diq1tyi3hn"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AngryGodot/AttackArea" unique_id=1965885386]
+position = Vector2(8, 16)
+shape = SubResource("RectangleShape2D_5wyu1")
+debug_color = Color(0.7, 0, 0.011666489, 0.41960785)

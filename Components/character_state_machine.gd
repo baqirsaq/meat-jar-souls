@@ -1,3 +1,4 @@
+@icon("uid://djct62nmoy28")
 class_name CharacterStateMachine
 extends Node
 
