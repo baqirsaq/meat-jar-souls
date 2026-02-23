@@ -65,6 +65,7 @@ func recalculate_stats() -> void:
 		_apply_buff_to_dicts(buff, stat_multipliers, stat_addends)
 
 	var stat_sample_pos: float = (float(level) / 100.0) - 0.01
+	@warning_ignore_start("narrowing_conversion")
 	current_max_health = base_max_health * STAT_CURVE[BuffableStats.MAX_HEALTH].sample(stat_sample_pos)
 	current_stamina    = current_stamina * STAT_CURVE[BuffableStats.STAMINA].sample(stat_sample_pos)
 	current_defense    = current_defense * STAT_CURVE[BuffableStats.DEFENSE].sample(stat_sample_pos)
