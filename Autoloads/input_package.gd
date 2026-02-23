@@ -66,6 +66,7 @@ func _input(_event: InputEvent) -> void:
 		
 		var just_pressed = Input.is_action_just_pressed(action)
 		var just_released = Input.is_action_just_released(action)
+		@warning_ignore("shadowed_variable")
 		var is_held = Input.is_action_pressed(action)
 
 		var state = _states[action]
