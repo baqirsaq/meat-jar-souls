@@ -4,6 +4,8 @@
 [ext_resource type="PackedScene" uid="uid://cp0ud44upr6pe" path="res://Player/player.tscn" id="2_8od7v"]
 [ext_resource type="PackedScene" uid="uid://dttlmwowmw2mo" path="res://Scenes/debug_punching_bag.tscn" id="3_35xla"]
 [ext_resource type="Texture2D" uid="uid://dlo32sjovbgmd" path="res://Assets/Debug/angry_godot.png" id="5_35xla"]
+[ext_resource type="PackedScene" uid="uid://bqr8plh8767t3" path="res://Scenes/blood_splater.tscn" id="6_0c07c"]
+[ext_resource type="PackedScene" uid="uid://cgb4vqjtv8gwy" path="res://Scenes/sparks.tscn" id="6_5wyu1"]
 [ext_resource type="Script" uid="uid://ba7diq1tyi3hn" path="res://Components/attack_area.gd" id="6_i3aeo"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_qc4db"]
@@ -73,6 +75,14 @@ _data = {
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5wyu1"]
 size = Vector2(64, 94)
 
+[sub_resource type="Environment" id="Environment_35xla"]
+background_mode = 3
+tonemap_mode = 4
+glow_enabled = true
+glow_blend_mode = 0
+adjustment_enabled = true
+adjustment_saturation = 1.11
+
 [node name="Node2D" type="Node2D" unique_id=1998949782]
 
 [node name="TileMap" type="TileMap" parent="." unique_id=678409963]
@@ -81,9 +91,12 @@ format = 2
 layer_0/tile_data = PackedInt32Array(196599, 0, 0, 196600, 0, 0, 196601, 0, 0, 196602, 0, 0, 196603, 0, 0, 196604, 0, 0, 196605, 0, 0, 196606, 0, 0, 196607, 0, 0, 131072, 0, 0, 131073, 0, 0, 131074, 0, 0, 131075, 0, 0, 131076, 0, 0, 131077, 0, 0, 131078, 0, 0, 131079, 0, 0, 131080, 0, 0, 131081, 0, 0, 131082, 0, 0, 131083, 0, 0, 131084, 0, 0, 131085, 0, 0, 131086, 0, 0, 131087, 0, 0, 131088, 0, 0, 131089, 0, 0, 131090, 0, 0, 196598, 0, 0, 196597, 0, 0, 131091, 0, 0, 196596, 0, 0, 196595, 0, 0, 131059, 0, 0, 65523, 0, 0, -13, 0, 0, -65549, 0, 0, -131085, 0, 0, -196621, 0, 0, -262157, 0, 0, -327693, 0, 0, -393229, 0, 0, -458765, 0, 0, -524301, 0, 0, -65524, 0, 0, -65523, 0, 0, -65522, 0, 0, -65521, 0, 0, -65520, 0, 0, -196591, 0, 0, -196590, 0, 0, -196589, 0, 0, 131092, 0, 0, 131093, 0, 0, 131094, 0, 0, 131095, 0, 0, 131096, 0, 0, 131097, 0, 0, 131098, 0, 0, 196634, 0, 0, 262170, 0, 0, 327706, 0, 0, 393242, 0, 0, 458778, 0, 0, 524314, 0, 0, 589850, 0, 0, 655386, 0, 0, 720922, 0, 0, 786458, 0, 0, 851994, 0, 0, 917530, 0, 0, 983066, 0, 0, 1048602, 0, 0, 1048603, 0, 0, 1048604, 0, 0, 1048605, 0, 0, 1048606, 0, 0, 1048607, 0, 0, 1048608, 0, 0, 1048609, 0, 0, 1048610, 0, 0, 1048611, 0, 0, 983075, 0, 0, 917539, 0, 0, 786467, 0, 0, 720931, 0, 0, 852003, 0, 0, 655395, 0, 0, 589859, 0, 0, 524323, 0, 0, 458787, 0, 0, 393251, 0, 0, 327715, 0, 0, 262179, 0, 0, 196643, 0, 0, 131107, 0, 0, 65571, 0, 0, 852002, 0, 0, 852001, 0, 0, 852000, 0, 0, 655390, 0, 0, 655391, 0, 0, 458786, 0, 0, 458785, 0, 0, 327710, 0, 0, 327711, 0, 0, 131105, 0, 0, 131106, 0, 0, 31, 0, 0, 30, 0, 0, -131043, 0, 0, -131044, 0, 0, -131045, 0, 0, 35, 0, 0, -65501, 0, 0, -131037, 0, 0, -196573, 0, 0, -262109, 0, 0, -327645, 0, 0, -393181, 0, 0, -458717, 0, 0, -524253, 0, 0, -589789, 0, 0, -655325, 0, 0, -720861, 0, 0, -589790, 0, 0, -589791, 0, 0, -589792, 0, 0, -589793, 0, 0, -589794, 0, 0, -589795, 0, 0, -786397, 0, 0, -851933, 0, 0, -589796, 0, 0, -589797, 0, 0, -589798, 0, 0, -589799, 0, 0, -589801, 0, 0, -589800, 0, 0, -589802, 0, 0, -589803, 0, 0, -589804, 0, 0, -589805, 0, 0, -589806, 0, 0, -589807, 0, 0, -393203, 0, 0, -393202, 0, 0, -393201, 0, 0)
 
 [node name="Player" parent="." unique_id=654311333 instance=ExtResource("2_8od7v")]
+z_index = 1
 position = Vector2(6, -55)
 
 [node name="Camera2D" type="Camera2D" parent="Player" unique_id=1478393608]
+position_smoothing_enabled = true
+position_smoothing_speed = 10.0
 
 [node name="PunchingBag" parent="." unique_id=814385084 instance=ExtResource("3_35xla")]
 position = Vector2(462, 48.5)
@@ -109,3 +122,13 @@ metadata/_custom_type_script = "uid://ba7diq1tyi3hn"
 position = Vector2(8, 16)
 shape = SubResource("RectangleShape2D_5wyu1")
 debug_color = Color(0.7, 0, 0.011666489, 0.41960785)
+
+[node name="BloodSplater" parent="AngryGodot" unique_id=409393148 instance=ExtResource("6_0c07c")]
+position = Vector2(-1578, 687)
+scale = Vector2(0.39, 0.39)
+
+[node name="Sparks" parent="." unique_id=478638301 instance=ExtResource("6_5wyu1")]
+position = Vector2(260, 293.00003)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1807904905]
+environment = SubResource("Environment_35xla")

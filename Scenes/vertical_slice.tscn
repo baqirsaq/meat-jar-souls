@@ -1,0 +1,136 @@
+[gd_scene format=3 uid="uid://d3h0nc4to3a0s"]
+
+[ext_resource type="Texture2D" uid="uid://onofk3nooy1u" path="res://Assets/Temp/background.png" id="1_k81sk"]
+[ext_resource type="Texture2D" uid="uid://bkn5sxhav1x1h" path="res://Assets/Temp/layer_4.png" id="2_0g7jc"]
+[ext_resource type="Texture2D" uid="uid://oblsdvlb6q0" path="res://Assets/Temp/layer_3.png" id="3_dbfrq"]
+[ext_resource type="Texture2D" uid="uid://cwpjddpux5dkb" path="res://Assets/Temp/layer 2.png" id="4_16cr6"]
+[ext_resource type="Texture2D" uid="uid://dw2i3wax0dj0s" path="res://Assets/Temp/layer 1.png" id="5_xv1pu"]
+[ext_resource type="Texture2D" uid="uid://d0cfa0hg71ofw" path="res://Assets/Temp/layer_1_item_1.png" id="6_0eosn"]
+[ext_resource type="Texture2D" uid="uid://kp2gcw8ye44g" path="res://Assets/Temp/layer_1_item_2.png" id="7_ea13c"]
+[ext_resource type="Texture2D" uid="uid://c8y1ye54de6n6" path="res://Assets/Temp/layer_1_item_3.png" id="8_8a54e"]
+[ext_resource type="Texture2D" uid="uid://8tufg6qmsm21" path="res://Assets/Temp/layer_1_item_4.png" id="9_b0ew6"]
+[ext_resource type="PackedScene" uid="uid://cp0ud44upr6pe" path="res://Player/player.tscn" id="10_2wmer"]
+[ext_resource type="Shader" uid="uid://bxspltnyi4ic5" path="res://Scenes/fog_fade_shader.tres" id="11_0g7jc"]
+[ext_resource type="PackedScene" uid="uid://ct6qje3gb22fd" path="res://Scenes/snowparticals.tscn" id="11_dbfrq"]
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_4cv7m"]
+distance = -983.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_dbfrq"]
+shader = ExtResource("11_0g7jc")
+
+[sub_resource type="Gradient" id="Gradient_k81sk"]
+offsets = PackedFloat32Array(0.26451612, 1)
+colors = PackedColorArray(0.6181356, 0.9811067, 1, 0, 1, 1, 1, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_0g7jc"]
+noise_type = 3
+frequency = 0.0061
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_dbfrq"]
+noise = SubResource("FastNoiseLite_0g7jc")
+color_ramp = SubResource("Gradient_k81sk")
+seamless = true
+normalize = false
+seamless_blend_skirt = 0.822
+
+[node name="VerticalSlice" type="Node2D" unique_id=1720771655]
+
+[node name="Parallax2D0" type="Parallax2D" parent="." unique_id=218018254]
+scroll_scale = Vector2(0, 0)
+
+[node name="Background" type="Sprite2D" parent="Parallax2D0" unique_id=562370762]
+position = Vector2(-1084, 0)
+scale = Vector2(1.595, 1.595)
+texture = ExtResource("1_k81sk")
+centered = false
+
+[node name="Parallax2D1" type="Parallax2D" parent="." unique_id=147079124]
+scroll_scale = Vector2(0.4, 0.4)
+repeat_size = Vector2(2560, 0)
+repeat_times = 3
+
+[node name="Layer4" type="Sprite2D" parent="Parallax2D1" unique_id=760510322]
+position = Vector2(-1084, 0)
+texture = ExtResource("2_0g7jc")
+centered = false
+
+[node name="Parallax2D2" type="Parallax2D" parent="." unique_id=1796731342]
+scroll_scale = Vector2(0.5, 0.5)
+repeat_size = Vector2(2560, 0)
+repeat_times = 3
+
+[node name="Layer3" type="Sprite2D" parent="Parallax2D2" unique_id=70975838]
+position = Vector2(-1084, 0)
+texture = ExtResource("3_dbfrq")
+centered = false
+
+[node name="Parallax2D3" type="Parallax2D" parent="." unique_id=554709426]
+scroll_scale = Vector2(0.8, 0.8)
+repeat_size = Vector2(2560, 0)
+repeat_times = 3
+
+[node name="Layer2" type="Sprite2D" parent="Parallax2D3" unique_id=1322034258]
+position = Vector2(-1084, 0)
+texture = ExtResource("4_16cr6")
+centered = false
+
+[node name="Parallax2D4" type="Parallax2D" parent="." unique_id=1968518148]
+repeat_size = Vector2(2560, 0)
+repeat_times = 3
+
+[node name="Layer1" type="Sprite2D" parent="Parallax2D4" unique_id=1121032056]
+position = Vector2(-1084, 0)
+texture = ExtResource("5_xv1pu")
+centered = false
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=1751344249]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=1197177951]
+shape = SubResource("WorldBoundaryShape2D_4cv7m")
+
+[node name="Items" type="Node2D" parent="." unique_id=176615647]
+z_index = 2
+
+[node name="Layer1Item1" type="Sprite2D" parent="Items" unique_id=1727909779]
+position = Vector2(910, 540)
+texture = ExtResource("6_0eosn")
+
+[node name="Layer1Item2" type="Sprite2D" parent="Items" unique_id=444297772]
+position = Vector2(910, 540)
+texture = ExtResource("7_ea13c")
+
+[node name="Layer1Item3" type="Sprite2D" parent="Items" unique_id=517153257]
+position = Vector2(910, 540)
+texture = ExtResource("8_8a54e")
+
+[node name="Layer1Item4" type="Sprite2D" parent="Items" unique_id=201270331]
+position = Vector2(910, 540)
+texture = ExtResource("9_b0ew6")
+
+[node name="Player" parent="." unique_id=654311333 instance=ExtResource("10_2wmer")]
+position = Vector2(953, 904)
+
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=1534367102]
+position = Vector2(7, -361)
+limit_top = -1000
+limit_bottom = 1080
+position_smoothing_speed = 20.0
+drag_horizontal_enabled = true
+
+[node name="Snowparticals" parent="Player/Camera2D" unique_id=816401946 instance=ExtResource("11_dbfrq")]
+position = Vector2(0, -543)
+
+[node name="Parallax2D5" type="Parallax2D" parent="." unique_id=873661150]
+scale = Vector2(2.42, 2.42)
+scroll_scale = Vector2(1.3, 1)
+repeat_size = Vector2(512, 0)
+autoscroll = Vector2(-50, 0)
+repeat_times = 3
+
+[node name="Fogsprite" type="Sprite2D" parent="Parallax2D5" unique_id=941011983]
+modulate = Color(1, 1, 1, 0.85882354)
+z_index = 2
+material = SubResource("ShaderMaterial_dbfrq")
+texture = SubResource("NoiseTexture2D_dbfrq")
+centered = false

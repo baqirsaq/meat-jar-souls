@@ -3,10 +3,12 @@ extends Character
 
 ## Manages player higher level behaviour
 
+@export var sparks_effect: PackedScene
 @onready var animation_tree: AnimationTree = $AnimationTree
 @onready var player_sprite: Sprite2D = $PlayerSprite
-@onready var attack_area: AttackArea = $AttackArea
+@onready var attack_node: AttackArea = $AttackArea
 @onready var character_state_machine: CharacterStateMachine = $CharacterStateMachine
+@onready var blood_splater: GPUParticles2D = $BloodSplater #TEMP FIXME REMOVEME PLZ
 
 func _ready() -> void:
 	animation_tree.active = true
@@ -36,10 +38,10 @@ func _update_animation() -> void:
 func _update_facing_directions(direction) -> void:
 	if direction > 0:
 		player_sprite.flip_h = false
-		attack_area.position.x = 43
+		attack_node.position.x = 43
 	elif direction < 0:
 		player_sprite.flip_h = true
-		attack_area.position.x = -43
+		attack_node.position.x = -43
 
 func _handle_horizontal_movement(direction: float) -> void:
 	if direction and character_state_machine.can_move():
@@ -51,8 +53,12 @@ func _handle_horizontal_movement(direction: float) -> void:
 func _on_damage_area_on_hit_received(attack_area: AttackArea, defense_state: DamageArea.DefenseState) -> void:
 	match defense_state:
 		DamageArea.DefenseState.PARRY:
-			print("parry")
+			var effect_instance: GPUParticles2D = sparks_effect.instantiate()
+			get_tree().current_scene.add_child(effect_instance)
+			effect_instance.global_position = global_position
+			effect_instance.emitting = true
 		DamageArea.DefenseState.GUARD:
 			lose_health(attack_area.damage - stats.current_defense) #TODO: find a better calculation approch
 		DamageArea.DefenseState.NONE:
 			lose_health(attack_area.damage)
+			blood_splater.blood_start()

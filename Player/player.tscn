@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dnkft8pvutw5n" path="res://Player/Scripts/player_main.gd" id="1_cvnsp"]
 [ext_resource type="Texture2D" uid="uid://dwvj0jswwqbqb" path="res://Assets/B E A N/BEAN_move.png" id="2_apopc"]
+[ext_resource type="PackedScene" uid="uid://cgb4vqjtv8gwy" path="res://Scenes/sparks.tscn" id="2_b1ygp"]
 [ext_resource type="Script" uid="uid://cn3o0ejw6xlmu" path="res://Components/stats.gd" id="2_pisgm"]
 [ext_resource type="Texture2D" uid="uid://d1q33bmg4slqq" path="res://Assets/B E A N/BEAN_jump.png" id="3_5htga"]
 [ext_resource type="Script" uid="uid://csm7w0cfkueoo" path="res://Components/character_state_machine.gd" id="3_6t5aa"]
@@ -15,9 +16,9 @@
 [ext_resource type="Script" uid="uid://c3jo3o8mwl8gq" path="res://Debug/velocity_debug_lable.gd" id="8_tx1dd"]
 [ext_resource type="Script" uid="uid://kyv7vjdosv8d" path="res://Player/Scripts/light_attack_state.gd" id="10_gu6f8"]
 [ext_resource type="Script" uid="uid://dcabvwx1fonwj" path="res://Player/Scripts/guard_state.gd" id="11_lfmf2"]
-[ext_resource type="Script" uid="uid://dro5qev2cnwue" path="res://health_debug_lable.gd" id="13_b1ygp"]
 [ext_resource type="Script" uid="uid://ba7diq1tyi3hn" path="res://Components/attack_area.gd" id="14_gu6f8"]
 [ext_resource type="Script" uid="uid://byi2xknvyq8b1" path="res://Components/damage_area.gd" id="15_dkpta"]
+[ext_resource type="PackedScene" uid="uid://bqr8plh8767t3" path="res://Scenes/blood_splater.tscn" id="19_o28un"]
 
 [sub_resource type="Resource" id="Resource_b1ygp"]
 script = ExtResource("2_pisgm")
@@ -1809,6 +1810,18 @@ func _should_apply_jump_cut(event) -> bool:
 	return character.velocity.y < 0  and is_active
 "
 
+[sub_resource type="GDScript" id="GDScript_pisgm"]
+script/source = "extends Label
+
+@export var character: Character
+
+func _process(_delta: float) -> void:
+	if not character:
+		text = \"No Character Assigned\"
+	else:
+		text = \"Health \" + str(round(character.current_health))
+"
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dkpta"]
 size = Vector2(38.5, 109.5)
 
@@ -1817,6 +1830,7 @@ size = Vector2(50, 109)
 
 [node name="Player" type="CharacterBody2D" unique_id=654311333]
 script = ExtResource("1_cvnsp")
+sparks_effect = ExtResource("2_b1ygp")
 stats = SubResource("Resource_b1ygp")
 
 [node name="PlayerSprite" type="Sprite2D" parent="." unique_id=170281464]
@@ -1894,7 +1908,7 @@ offset_top = -163.0
 offset_right = 56.0
 offset_bottom = -140.0
 text = "HP: null"
-script = ExtResource("13_b1ygp")
+script = SubResource("GDScript_pisgm")
 character = NodePath("..")
 
 [node name="VelocityDebugLable" type="Label" parent="." unique_id=1595658298 node_paths=PackedStringArray("character")]
@@ -1945,6 +1959,10 @@ metadata/_custom_type_script = "uid://byi2xknvyq8b1"
 position = Vector2(-2, 9.5)
 shape = SubResource("RectangleShape2D_lfmf2")
 debug_color = Color(0.070000015, 0.7, 0, 0.41960785)
+
+[node name="BloodSplater" parent="." unique_id=409393148 instance=ExtResource("19_o28un")]
+position = Vector2(-28.999998, -6.0000005)
+scale = Vector2(-0.145, 0.145)
 
 [connection signal="animation_finished" from="AnimationTree" to="CharacterStateMachine/LightAttack" method="_on_animation_tree_animation_finished"]
 [connection signal="animation_finished" from="AnimationTree" to="CharacterStateMachine/Guard" method="_on_animation_tree_animation_finished"]

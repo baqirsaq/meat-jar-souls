@@ -39,6 +39,8 @@ const DEFAULT_MODES: Dictionary = {
 	"light_attack": InputMode.HOLD
 }
 
+var _game_actions_paused: bool = false
+var _ui_actions_paused: bool = false
 # --- Input State ---
 var _states: Dictionary = {}
 var _toggle_states: Dictionary = {}  # tracks toggle on/off per action
@@ -55,6 +57,13 @@ func _ready() -> void:
 
 func _input(_event: InputEvent) -> void:
 	for action in TOGGLEABLE_ACTIONS:
+		if _game_actions_paused and action in GAME_ACTIONS:
+			_clear_action_state(action)
+			continue
+		if _ui_actions_paused and action in UI_ACTIONS:
+			_clear_action_state(action)
+			continue
+		
 		var just_pressed = Input.is_action_just_pressed(action)
 		var just_released = Input.is_action_just_released(action)
 		var is_held = Input.is_action_pressed(action)
@@ -71,6 +80,13 @@ func _input(_event: InputEvent) -> void:
 			state["pressed"]  = just_pressed
 			state["held"]     = _toggle_states[action]
 			state["released"] = just_released and not _toggle_states[action]
+
+
+func _clear_action_state(action: String) -> void:
+	if _states.has(action):
+		_states[action] = {"pressed": false, "held": false, "released": false}
+	if _toggle_states.has(action):
+		_toggle_states[action] = false
 
 
 # --- Public Accessors ---
@@ -106,9 +122,15 @@ func toggle_mode(action: String) -> void:
 	set_mode(action, InputMode.TOGGLE if current == InputMode.HOLD else InputMode.HOLD)
 
 
-func pause_game_actions() -> void:
-	pass #TODO:
+func pause_game_actions(should_pause: bool) -> void:
+	_game_actions_paused = should_pause
+	if should_pause:
+		for action in GAME_ACTIONS:
+			_clear_action_state(action)
 
 
-func pause_ui_actions() -> void:
-	pass #TODO:
+func pause_ui_actions(should_pause: bool) -> void:
+	_ui_actions_paused = should_pause
+	if should_pause:
+		for action in UI_ACTIONS:
+			_clear_action_state(action)
