@@ -1,0 +1,86 @@
+[gd_scene format=3 uid="uid://ekjufcsvqeh5"]
+
+[ext_resource type="Texture2D" uid="uid://dlo32sjovbgmd" path="res://Assets/Debug/angry_godot.png" id="1_fldwy"]
+[ext_resource type="Script" uid="uid://ba7diq1tyi3hn" path="res://Components/attack_area.gd" id="2_aqskm"]
+[ext_resource type="PackedScene" uid="uid://bqr8plh8767t3" path="res://Scenes/blood_splater.tscn" id="3_1ocr7"]
+
+[sub_resource type="Animation" id="Animation_i3aeo"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_5wyu1"]
+resource_name = "parry_test"
+length = 1.2083334
+loop_mode = 1
+step = 0.041666668
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.7083333, 0.8333333, 0.9583333, 1.0833334),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AttackArea")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.625),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [0.1],
+"method": &"activate"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_0c07c"]
+_data = {
+&"RESET": SubResource("Animation_i3aeo"),
+&"parry_test": SubResource("Animation_5wyu1")
+}
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5wyu1"]
+size = Vector2(64, 94)
+
+[node name="AngryGodot" type="Sprite2D" unique_id=985294002]
+texture = ExtResource("1_fldwy")
+hframes = 4
+vframes = 3
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1123267545]
+libraries/ = SubResource("AnimationLibrary_0c07c")
+autoplay = &"parry_test"
+
+[node name="AttackArea" type="Area2D" parent="." unique_id=1585438714]
+collision_layer = 0
+collision_mask = 16
+script = ExtResource("2_aqskm")
+damage = 15
+metadata/_custom_type_script = "uid://ba7diq1tyi3hn"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea" unique_id=1114165084]
+position = Vector2(8, 16)
+shape = SubResource("RectangleShape2D_5wyu1")
+debug_color = Color(0.7, 0, 0.011666489, 0.41960785)
+
+[node name="BloodSplater" parent="." unique_id=409393148 instance=ExtResource("3_1ocr7")]
+position = Vector2(-1578, 687)
+scale = Vector2(0.39, 0.39)
