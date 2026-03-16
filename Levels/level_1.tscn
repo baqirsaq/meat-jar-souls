@@ -87,6 +87,3 @@ position = Vector2(4649, -3215)
 
 [node name="AngryGodot12" parent="." unique_id=1336120682 instance=ExtResource("3_rfktq")]
 position = Vector2(5074, -3219)
-
-[node name="AngryGodot13" parent="." unique_id=445423532 instance=ExtResource("3_rfktq")]
-position = Vector2(1325, -6402)
