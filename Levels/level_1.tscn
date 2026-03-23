@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://ekjufcsvqeh5" path="res://Debug/temp_enemy.tscn" id="3_rfktq"]
 [ext_resource type="Texture2D" uid="uid://c4ufm7ffkj84j" path="res://icon.svg" id="4_0urlm"]
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ihfcg"]
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_rf6l5"]
 texture = ExtResource("1_rf6l5")
 texture_region_size = Vector2i(64, 64)
 0:0/0 = 0
@@ -14,7 +14,7 @@ texture_region_size = Vector2i(64, 64)
 [sub_resource type="TileSet" id="TileSet_rka8t"]
 tile_size = Vector2i(64, 64)
 physics_layer_0/collision_layer = 1
-sources/0 = SubResource("TileSetAtlasSource_ihfcg")
+sources/0 = SubResource("TileSetAtlasSource_rf6l5")
 
 [node name="Level1" type="Node2D" unique_id=562576207]
 
