@@ -58,10 +58,13 @@ scale = Vector2(2.5000033, 1.9765625)
 texture = ExtResource("4_0urlm")
 
 [node name="Label" type="Label" parent="Icon2" unique_id=1857790265]
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.23300001
 offset_left = 1293.0
 offset_top = -3928.0
-offset_right = 1357.0
-offset_bottom = -3819.0
+offset_right = 1229.0
+offset_bottom = -3848.824
 text = "Secret"
 
 [node name="AngryGodot5" parent="." unique_id=911037147 instance=ExtResource("3_rfktq")]
