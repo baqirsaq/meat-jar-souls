@@ -5,7 +5,7 @@ extends CharacterBody2D
 var speed: float = 0.0
 var acceleration: float = 0.0
 var deceleration: float = 0.0
-var current_health: int = 100
+var current_health: int
 var _current_gravity: float
 var _gravity_min: float = 920.0
 var _gravity_max: float = 1500.0
