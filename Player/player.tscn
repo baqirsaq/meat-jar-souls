@@ -2,10 +2,10 @@
 
 [ext_resource type="Script" uid="uid://dnkft8pvutw5n" path="res://Player/Scripts/player_main.gd" id="1_cvnsp"]
 [ext_resource type="Texture2D" uid="uid://dwvj0jswwqbqb" path="res://Assets/B E A N/BEAN_move.png" id="2_apopc"]
-[ext_resource type="PackedScene" uid="uid://cgb4vqjtv8gwy" path="res://Scenes/sparks.tscn" id="2_b1ygp"]
-[ext_resource type="Script" uid="uid://cn3o0ejw6xlmu" path="res://Components/stats.gd" id="2_pisgm"]
+[ext_resource type="PackedScene" uid="uid://cgb4vqjtv8gwy" path="res://Scenes/sparks.tscn" id="2_o28un"]
 [ext_resource type="Texture2D" uid="uid://d1q33bmg4slqq" path="res://Assets/B E A N/BEAN_jump.png" id="3_5htga"]
 [ext_resource type="Script" uid="uid://csm7w0cfkueoo" path="res://Components/character_state_machine.gd" id="3_6t5aa"]
+[ext_resource type="Script" uid="uid://cn3o0ejw6xlmu" path="res://Components/stats.gd" id="3_n471f"]
 [ext_resource type="Texture2D" uid="uid://bqfclwmx0de1y" path="res://Assets/B E A N/BEAN_combat_1.png" id="4_p5o4e"]
 [ext_resource type="Script" uid="uid://bv3s8pd1iniu8" path="res://Player/Scripts/sprint_state.gd" id="4_tx1dd"]
 [ext_resource type="Script" uid="uid://1jswr6j83xvb" path="res://Player/Scripts/ground_state.gd" id="4_x3wgy"]
@@ -20,8 +20,8 @@
 [ext_resource type="Script" uid="uid://byi2xknvyq8b1" path="res://Components/damage_area.gd" id="15_dkpta"]
 [ext_resource type="PackedScene" uid="uid://bqr8plh8767t3" path="res://Scenes/blood_splater.tscn" id="19_o28un"]
 
-[sub_resource type="Resource" id="Resource_b1ygp"]
-script = ExtResource("2_pisgm")
+[sub_resource type="Resource" id="Resource_7emwf"]
+script = ExtResource("3_n471f")
 metadata/_custom_type_script = "uid://cn3o0ejw6xlmu"
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_f1ek2"]
@@ -1819,7 +1819,7 @@ func _process(_delta: float) -> void:
 	if not character:
 		text = \"No Character Assigned\"
 	else:
-		text = \"Health \" + str(round(character.current_health))
+		text = \"Health \" + str(round(character.stats.health))
 "
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dkpta"]
@@ -1830,8 +1830,8 @@ size = Vector2(50, 109)
 
 [node name="Player" type="CharacterBody2D" unique_id=654311333]
 script = ExtResource("1_cvnsp")
-sparks_effect = ExtResource("2_b1ygp")
-stats = SubResource("Resource_b1ygp")
+sparks_effect = ExtResource("2_o28un")
+stats = SubResource("Resource_7emwf")
 
 [node name="PlayerSprite" type="Sprite2D" parent="." unique_id=170281464]
 texture = ExtResource("2_apopc")

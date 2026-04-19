@@ -12,8 +12,8 @@ var _gravity_max: float = 1500.0
 
 
 func _ready() -> void:
-	stats.recalculate_stats()
-	current_health = stats.current_max_health
+	stats = stats.duplicate()
+	stats.setup_stats()
 
 
 func apply_gravity(delta) -> void:
@@ -25,4 +25,4 @@ func apply_gravity(delta) -> void:
 			_current_gravity = _gravity_min
 
 func lose_health(value: int) -> void:
-	current_health -= value
+	stats.health -= value

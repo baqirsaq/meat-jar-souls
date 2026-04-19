@@ -74,12 +74,14 @@ light_attack={
 
 [layer_names]
 
+2d_physics/layer_2="PerksNShi"
 2d_physics/layer_5="Player"
 2d_physics/layer_6="Enemy"
 2d_physics/layer_7="Breakable"
 
 [physics]
 
+2d/run_on_separate_thread=true
 3d/physics_engine="Jolt Physics"
 
 [rendering]

@@ -11,13 +11,14 @@ extends Character
 @onready var blood_splater: GPUParticles2D = $BloodSplater #TEMP FIXME REMOVEME PLZ
 
 func _ready() -> void:
+	super._ready()
 	animation_tree.active = true
 
 
 func _physics_process(delta: float) -> void:
 	#TODO: Update it to work with the InputPackage
 	var direction: float = Input.get_axis("left", "right")
-
+	print(stats.current_max_health)
 	apply_gravity(delta)
 	_handle_horizontal_movement(direction)
 
@@ -50,7 +51,8 @@ func _handle_horizontal_movement(direction: float) -> void:
 		velocity.x = move_toward(velocity.x, 0, deceleration)
 
 
-func _on_damage_area_on_hit_received(attack_area: AttackArea, defense_state: DamageArea.DefenseState) -> void:
+func _on_damage_area_on_hit_received(attack_area: AttackArea,
+		defense_state: DamageArea.DefenseState) -> void:
 	match defense_state:
 		DamageArea.DefenseState.PARRY:
 			var effect_instance: GPUParticles2D = sparks_effect.instantiate()
@@ -58,7 +60,7 @@ func _on_damage_area_on_hit_received(attack_area: AttackArea, defense_state: Dam
 			effect_instance.global_position = global_position
 			effect_instance.emitting = true
 		DamageArea.DefenseState.GUARD:
-			lose_health(attack_area.damage - stats.current_defense) #TODO: find a better calculation approch
+			lose_health(attack_area.damage - stats.current_defense) #TODO: find a better calculation approach
 		DamageArea.DefenseState.NONE:
 			lose_health(attack_area.damage)
 			blood_splater.blood_start()

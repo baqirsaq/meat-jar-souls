@@ -38,10 +38,6 @@ var health: int = 0: set = _on_health_set
 var stat_buffs: Array[StatBuff]
 
 
-func _init() -> void:
-	call_deferred("setup_stats")
-
-
 func setup_stats() -> void:
 	recalculate_stats()
 	health = current_max_health
@@ -66,10 +62,11 @@ func recalculate_stats() -> void:
 
 	var stat_sample_pos: float = (float(level) / 100.0) - 0.01
 	@warning_ignore_start("narrowing_conversion")
-	current_max_health = base_max_health * STAT_CURVE[BuffableStats.MAX_HEALTH].sample(stat_sample_pos)
-	current_stamina    = current_stamina * STAT_CURVE[BuffableStats.STAMINA].sample(stat_sample_pos)
-	current_defense    = current_defense * STAT_CURVE[BuffableStats.DEFENSE].sample(stat_sample_pos)
-	current_attack     = current_attack  * STAT_CURVE[BuffableStats.ATTACK].sample(stat_sample_pos)
+	current_max_health = int(base_max_health *
+	STAT_CURVE[BuffableStats.MAX_HEALTH].sample(stat_sample_pos))
+	current_stamina    = int(base_stamina * STAT_CURVE[BuffableStats.STAMINA].sample(stat_sample_pos))
+	current_defense    = int(base_defense * STAT_CURVE[BuffableStats.DEFENSE].sample(stat_sample_pos))
+	current_attack     = int(base_attack * STAT_CURVE[BuffableStats.ATTACK].sample(stat_sample_pos))
 
 	for stat_name in stat_multipliers:
 		var prop: String = "current_" + stat_name
@@ -99,9 +96,10 @@ func _apply_buff_to_dicts(buff: StatBuff, stat_multipliers: Dictionary,
 
 
 func _on_health_set(new_value: int) -> void:
+	var old_health := health
 	health = clampi(new_value, 0, current_max_health)
 	health_change.emit(health, current_max_health)
-	if health <= 0:
+	if health <= 0 and old_health > 0:  # only emit if this is a real depletion
 		health_depleted.emit()
 
 
