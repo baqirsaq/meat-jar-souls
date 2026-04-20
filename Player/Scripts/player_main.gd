@@ -4,11 +4,15 @@ extends Character
 ## Manages player higher level behaviour
 
 @export var sparks_effect: PackedScene
+
+var current_ability: Ability = null
+
 @onready var animation_tree: AnimationTree = $AnimationTree
 @onready var player_sprite: Sprite2D = $PlayerSprite
 @onready var attack_node: AttackArea = $AttackArea
 @onready var character_state_machine: CharacterStateMachine = $CharacterStateMachine
 @onready var blood_splater: GPUParticles2D = $BloodSplater #TEMP FIXME REMOVEME PLZ
+
 
 func _ready() -> void:
 	super._ready()
@@ -44,6 +48,7 @@ func _update_facing_directions(direction) -> void:
 		player_sprite.flip_h = true
 		attack_node.position.x = -43
 
+
 func _handle_horizontal_movement(direction: float) -> void:
 	if direction and character_state_machine.can_move():
 		velocity.x = move_toward(velocity.x, speed * direction, acceleration)
@@ -64,3 +69,21 @@ func _on_damage_area_on_hit_received(attack_area: AttackArea,
 		DamageArea.DefenseState.NONE:
 			lose_health(attack_area.damage)
 			blood_splater.blood_start()
+
+
+func set_available_ability(ability: Ability):
+	current_ability = ability
+	if ability:
+		print("You can now: ", ability.ability_name)
+	else:
+		print("Ability lost.")
+
+
+func execute_ability():
+	match current_ability.ability_name:
+		"super_jump":
+			velocity.y = -current_ability.power
+			print("Super Jump Performed!")
+		"wall_run":
+			# Logic for wall run here
+			pass

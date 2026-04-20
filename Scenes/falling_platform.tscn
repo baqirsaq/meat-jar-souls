@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://bl7h1q3a8kc6v"]
+
+[ext_resource type="Script" uid="uid://llaux4twnrvr" path="res://Scripts/falling_platform.gd" id="1_0msxf"]
+[ext_resource type="Texture2D" uid="uid://bk3f40ig210mn" path="res://Assets/Icons/breakable.svg" id="1_1j650"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1j650"]
+size = Vector2(64, 64)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lx48v"]
+size = Vector2(46, 20)
+
+[node name="FallingPlatform" type="StaticBody2D" unique_id=1044440084]
+script = ExtResource("1_0msxf")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="." unique_id=946989640]
+
+[node name="Breakable" type="Sprite2D" parent="." unique_id=474596265]
+scale = Vector2(4, 4)
+texture = ExtResource("1_1j650")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=166325503]
+shape = SubResource("RectangleShape2D_1j650")
+
+[node name="DectectionArea" type="Area2D" parent="." unique_id=1378975875]
+light_mask = 0
+visibility_layer = 0
+collision_layer = 0
+collision_mask = 16
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DectectionArea" unique_id=1943945188]
+position = Vector2(0, -32)
+shape = SubResource("RectangleShape2D_lx48v")
+debug_color = Color(0.989147, 0, 0.29922712, 0.41960785)
+
+[node name="Timer" type="Timer" parent="." unique_id=1502924887]
+one_shot = true
+
+[connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_visible_on_screen_notifier_2d_screen_exited"]
+[connection signal="area_entered" from="DectectionArea" to="." method="_on_dectection_area_body_entered"]
+[connection signal="body_entered" from="DectectionArea" to="." method="_on_dectection_area_body_entered"]
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

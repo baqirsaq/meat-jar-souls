@@ -2,8 +2,10 @@ extends State
 
 @export var ground_state: State
 @export var guard_speed: float = 250.0
-@onready var damage_area: DamageArea = $"../../DamageArea"
+
 var is_parry_done: bool = false
+
+@onready var damage_area: DamageArea = $"../../DamageArea"
 
 func on_enter() -> void:
 	is_parry_done = false

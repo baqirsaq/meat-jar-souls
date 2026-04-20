@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://bqr8plh8767t3" path="res://Scenes/blood_splater.tscn" id="6_0c07c"]
 [ext_resource type="PackedScene" uid="uid://cgb4vqjtv8gwy" path="res://Scenes/sparks.tscn" id="6_5wyu1"]
 [ext_resource type="Script" uid="uid://ba7diq1tyi3hn" path="res://Components/attack_area.gd" id="6_i3aeo"]
+[ext_resource type="PackedScene" uid="uid://dl6mwcr5818ai" path="res://Debug/enemy.tscn" id="8_0c07c"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_qc4db"]
 texture = ExtResource("1_8od7v")
@@ -132,3 +133,6 @@ position = Vector2(260, 293.00003)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1807904905]
 environment = SubResource("Environment_35xla")
+
+[node name="Character" parent="." unique_id=1972378198 instance=ExtResource("8_0c07c")]
+position = Vector2(807, -169)

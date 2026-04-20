@@ -50,12 +50,15 @@ func _sprint() -> void:
 func _handle_coyote_time(delta: float) -> void:
 	if time_passed < coyote_time:
 		time_passed += delta
-		if InputPackage.is_pressed("jump"):
+		if InputPackage.is_pressed("jump") and character.current_ability == "super_jump":
 			playback.travel("jump_start")
 	else:
 		next_state = air_state
 
 
 func handle_jump() -> void:
-	character.velocity.y = jump_power
+	if character.current_ability and character.current_ability.ability_name == "super_jump":
+		character.execute_ability()
+	else:
+		character.velocity.y = jump_power
 	next_state = air_state
