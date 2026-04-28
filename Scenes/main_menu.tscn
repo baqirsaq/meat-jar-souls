@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://6tmp6cejvg8n"]
+
+[ext_resource type="Script" uid="uid://bmuivb6oaj0ys" path="res://Scripts/main_menu.gd" id="1_28flt"]
+[ext_resource type="Texture2D" uid="uid://dfoca71mx22h" path="res://Assets/UI/main_menu_background.png" id="2_1ehe0"]
+[ext_resource type="FontFile" uid="uid://64eprotopwm5" path="res://Assets/Fonts/InstrumentSerif-Regular.ttf" id="3_ce3w2"]
+
+[sub_resource type="Theme" id="Theme_n45e2"]
+default_font = ExtResource("3_ce3w2")
+default_font_size = 20
+
+[node name="MainMenu" type="Node2D" unique_id=935010670]
+script = ExtResource("1_28flt")
+
+[node name="MainMenuBackground" type="Sprite2D" parent="." unique_id=982216924]
+texture = ExtResource("2_1ehe0")
+centered = false
+
+[node name="ButtonManger" type="Control" parent="." unique_id=537183355]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Start" type="Button" parent="ButtonManger" unique_id=1303263827]
+layout_mode = 0
+offset_left = 77.0
+offset_top = 597.0
+offset_right = 557.0
+offset_bottom = 688.0
+theme = SubResource("Theme_n45e2")
+theme_type_variation = &"FlatButton"
+theme_override_colors/font_color = Color(0.8745098, 0.6862745, 0.18039216, 1)
+theme_override_font_sizes/font_size = 50
+text = "Start"
+
+[node name="Quit" type="Button" parent="ButtonManger" unique_id=217194718]
+layout_mode = 0
+offset_left = 77.0
+offset_top = 730.0
+offset_right = 557.0
+offset_bottom = 821.0
+theme_type_variation = &"FlatButton"
+theme_override_colors/font_color = Color(0.8745098, 0.6862745, 0.18039216, 1)
+theme_override_fonts/font = ExtResource("3_ce3w2")
+theme_override_font_sizes/font_size = 50
+text = "Quit"
+
+[connection signal="pressed" from="ButtonManger/Start" to="." method="_on_start_pressed"]
+[connection signal="pressed" from="ButtonManger/Quit" to="." method="_on_quit_pressed"]
